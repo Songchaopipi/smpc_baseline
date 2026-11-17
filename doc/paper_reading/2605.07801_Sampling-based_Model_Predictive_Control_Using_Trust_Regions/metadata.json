@@ -1,0 +1,63 @@
+{
+  "input": "https://arxiv.org/abs/2605.07801v2",
+  "arxiv_id": "2605.07801",
+  "title": "Sampling-based Model Predictive Control Using Trust Regions",
+  "workspace_name": "2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions",
+  "version": "v2",
+  "paper_id_with_version": "2605.07801v2",
+  "arxiv_abs_url": "https://arxiv.org/abs/2605.07801v2",
+  "arxiv_pdf_url": "https://arxiv.org/pdf/2605.07801v2.pdf",
+  "hjfy_url": "https://hjfy.top/arxiv/2605.07801v2",
+  "papers_cool_url": "https://papers.cool/arxiv/2605.07801v2",
+  "ar5iv_url": "https://ar5iv.org/html/2605.07801v2",
+  "arxiv_src_url": "https://arxiv.org/src/2605.07801v2",
+  "workspace": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions",
+  "report_path": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/2605.07801_阅读报告.md",
+  "created_at": "2026-11-16T14:15:34.167512Z",
+  "internal_status": {
+    "hjfy_visit_status": "已尝试访问",
+    "papers_cool_rel_status": "已访问论文页，REL 结果待后续核实"
+  },
+  "paths": {
+    "raw_abs_html": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/raw/abs.html",
+    "raw_pdf": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/raw/paper.pdf",
+    "raw_ar5iv_html": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/raw/ar5iv.html",
+    "raw_src_tar": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/raw/source.tar",
+    "raw_hjfy_html": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/raw/hjfy.html",
+    "raw_papers_cool_html": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/raw/papers_cool.html",
+    "cache_references_json": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/cache/references.json",
+    "cache_images_manifest": "/home/songchao/G1_Locomaniplation/SMPC/doc/paper_reading/2605.07801_Sampling-based_Model_Predictive_Control_Using_Trust_Regions/cache/images_manifest.json"
+  },
+  "fetch_results": {
+    "arxiv_abs": {
+      "ok": true,
+      "status_code": 200,
+      "url": "https://arxiv.org/abs/2605.07801v2"
+    },
+    "arxiv_pdf": {
+      "ok": true,
+      "status_code": 200,
+      "url": "https://arxiv.org/pdf/2605.07801v2.pdf"
+    },
+    "ar5iv": {
+      "ok": true,
+      "status_code": 200,
+      "url": "https://ar5iv.org/html/2605.07801v2"
+    },
+    "arxiv_src": {
+      "ok": true,
+      "status_code": 200,
+      "url": "https://arxiv.org/src/2605.07801v2"
+    },
+    "hjfy": {
+      "ok": true,
+      "status_code": 200,
+      "url": "https://hjfy.top/arxiv/2605.07801v2"
+    },
+    "papers_cool": {
+      "ok": true,
+      "status_code": 200,
+      "url": "https://papers.cool/arxiv/2605.07801v2"
+    }
+  }
+}

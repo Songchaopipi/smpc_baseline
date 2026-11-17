@@ -1,0 +1,28 @@
+% \section{Optimal Control Problem}
+\section{Background}
+\label{sec:ocp}
+
+We consider a finite-horizon \ac{OCP} with cumulative cost
+\begin{align}
+    \label{eq:ocp_cost}
+%     J_k & = g_{\horizon}(\vx_{k + \horizon}) + \sum_{n=k}^{k+\horizon-1} g_n(\vx_n, \vu_n)  \enspace,
+      J_k & = g_{\horizon}(\vx_{k + \horizon}) + \sum_{n=0}^{\horizon-1} g_n(\vx_{k + n}, \vu_{k + n})  \enspace,
+\end{align}
+where $k$ denotes the current time step, $\horizon$ the prediction horizon, and $n$ the time step within the prediction horizon.
+Furthermore, $\vx_k \in \IR^{d_x}$ represents the system state, and $\vu_k \in \IR^{d_u}$ the control input.
+The stage cost is given by $g_n(\cdot, \cdot)\colon \IR^{d_x} \times \IR^{d_u} \to \IR$, and the terminal cost by $g_{\horizon}(\cdot)\colon \IR^{d_x} \to \IR$.
+The discrete-time system dynamics are described by
+\begin{align}
+    \label{eq:system_dynamics}
+    \vx_{n+1} & = \va_n(\vx_n, \vu_n) \enspace, \quad n=k,\ldots,k+\horizon-1 \enspace,
+\end{align}
+with transition function $\va_k(\cdot,\cdot)\colon \IR^{d_x} \times \IR^{d_u} \to \IR^{d_x}$.
+
+%
+The objective is to determine the optimal control sequence $\vu_{k:k+\horizon-1}^* = \left(\vu_k^*, \vu_{k+1}^*, \ldots, \vu_{k+\horizon-1}^*\right)$ that minimizes $J_k$.
+From this optimal sequence, the first control input $\vu_k^*$ is applied to the system, and the optimization is repeated at the next time step $k+1$ in a receding horizon fashion.
+For compact notation, we represent the stacked control sequence $\vu_{k:k+\horizon-1}$ by $\vVarCem \in \IR^{\dimVarCem}$, \ie, $\vVarCem = [\vu_k\T, \vu_{k+1}\T, \ldots, \vu_{k+\horizon-1}\T]\T \in \IR^{\horizon \cdot d_u}$ (omitting time index $k$ from now on for brevity) and write the associated cumulative cost as $J(\vVarCem)$.
+
+In sampling-based \ac{MPC}, this \ac{OCP} is solved iteratively by drawing $\numCEMSamples$ control sequences $\{\vVarCem^{(i)}\}_{i=1}^{\numCEMSamples}$ from a proposal \ac{PDF} $\pdf(\vVarCem; \vtheta_j)$, parameterized by $\vtheta_j$ at iteration $j=0,\dots, \numCEMIter-1$. 
+For each sampled control sequence $\vVarCem^{(i)}$, the corresponding state trajectory is predicted using the system dynamics, its cost is evaluated, and the proposal is subsequently updated based on all trajectories and their costs.
+A common choice for the proposal in the considered Euclidean action space is a Gaussian distribution $\Gaussian(\vVarCem; \evVarCem_j, \mC_j)$, where the mean $\evVarCem_j$ and covariance $\mC_j$ constitute the parameters collected in $\vtheta_j$.

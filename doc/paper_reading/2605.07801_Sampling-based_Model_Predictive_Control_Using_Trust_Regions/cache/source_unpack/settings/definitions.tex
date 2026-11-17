@@ -1,0 +1,344 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%            Definitions from paper
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{bbold} % \mathbb for lowercase letters and numbers
+
+\newcommand{\const}{{\mathrm{const.}}}
+\newcommand{\ie}{i.e.}
+\newcommand{\Ie}{I.e.}
+\newcommand{\eg}{e.g.}
+\newcommand{\Eg}{E.g.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% special matrices and vectors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% define absolute value 
+% \DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\newcommand{\abs}[1]{{\ensuremath{\left \lvert #1 \right \rvert}}}
+
+% define trace operator
+\DeclareMathOperator{\tr}{tr}
+
+% define optimal text
+\newcommand{\opttxt}{opt.}
+
+
+% define augmented random vector
+\newcommand{\xaug}{\ensuremath{\tilde{\rvx}}}
+
+% \newcommand{\traindata}{\ensuremath{\mathcal{D}_\mathrm{Train}}} % train data
+% \newcommand{\testdata}{\ensuremath{\mathcal{D}_\mathrm{Test}}}  % test data
+\newcommand{\traindata}{\ensuremath{\mathcal{D}}} % train data
+\newcommand{\testdata}{\ensuremath{\mathcal{D}}}  % test data
+\newcommand{\numTestData}{\ensuremath{N}} % N_\mathrm{Test}}
+\newcommand{\numTrainData}{\ensuremath{N_\mathrm{Train}}} % number of training data
+
+% define bins (sets) of data indices
+\newcommand{\binSet}{\ensuremath{\mathcal{B}}} % bin set
+
+\newcommand{\inputset}{\ensuremath{\mathcal{X}}} % input set
+\newcommand{\outputset}{\ensuremath{\mathcal{Y}}} % output set
+
+\newcommand{\inputSetTest}{\ensuremath{\mathcal{X}_\mathrm{Test}}} % input set
+\newcommand{\outputSetTest}{\ensuremath{\mathcal{Y}_\mathrm{Test}}} % input set
+
+\newcommand{\bnnA}{BNN\textsuperscript{A}}
+\newcommand{\bnnB}{BNN\textsuperscript{B}}
+\newcommand{\bnnAapprox}{BNN\textsuperscript{\~A}}
+
+
+
+% define the kernel
+% input space hypersphere kernel
+\newcommand{\inKernelHypSphCenter}{\ensuremath{\vx_\mathrm{c}}} % center
+\newcommand{\inKernelHypSphWidth}{\ensuremath{b}} % width
+\newcommand{\inKernelHypSph}{% kernel formula
+    \ensuremath{
+        K\mleft(\inKernelHypSphCenter,\inKernelHypSphWidth\mright)%
+    }%
+}%
+
+% define base and reference models & predictions
+\newcommand{\baseLabel}{base}
+\newcommand{\refLabel}{ref}
+\newcommand{\bnnBase}{BNN\textsuperscript{\baseLabel}}
+\newcommand{\bnnRef}{BNN\textsuperscript{\refLabel}}
+
+\newcommand{\predA}{
+    \ensuremath{p_n^{\mathrm{A}}({\vy}  \mid {\vx_n, \traindata})}
+}
+\newcommand{\predB}{\ensuremath{p_n^\mathrm{B}({\vy} \mid {\vx_n, \traindata})}}
+
+\newcommand{\predBase}{
+    \ensuremath{p^{\mathrm{\baseLabel}}({\vy}  \mid {\vx_n, \traindata})}
+}
+\newcommand{\predRef}{\ensuremath{p^\mathrm{\refLabel}({\vy} \mid {\vx_n, \traindata})}}
+
+% expected calibration error
+\newcommand{\eceacc}{%
+    \ensuremath{%
+        \operatorname{acc}\mleft(B_l\mright)%
+    }%
+}%
+\newcommand{\ececonf}{%
+    \ensuremath{%
+        \operatorname{conf}\mleft(B_l\mright)%
+    }%
+}%
+
+% define degrees of freedom of the chi-square distribution
+\newcommand{\chiDoF}{\ensuremath{k}}
+
+%pvalue index
+\newcommand{\pvalIndex}{\ensuremath{\mathrm{val}}}
+
+% define mathrm abbreviation for "Cauchy"
+\newcommand{\Cauchy}{\ensuremath{\mathrm{C}}}
+
+% define mathrm abbreviation for "Mahalanobis"
+\newcommand{\Mahala}{\ensuremath{\mathrm{M}}}
+
+% define index / superscript for ground truth
+\newcommand{\GT}{\ensuremath{\mathrm{GT}}}
+
+% define superscript for estimation
+\newcommand{\est}{\ensuremath{\mathrm{e}}}
+
+% Prediction Index for comparison with GT or incaition of precition in density
+\newcommand{\PredIndex}{\ensuremath{\mathrm{Pred}}}
+
+% estimated distribution
+\newcommand{\pest}{\ensuremath{p^{\est}}}
+% true distribution
+\newcommand{\ptrue}{\ensuremath{p^{\GT}}}
+
+% true error vector
+% \newcommand{\verror}{\ensuremath{\ve^{\ast}}} % estimation error
+
+% % true random error vector
+% \newcommand{\rverror}{\ensuremath{\rve^{\mathrm{R}}}} % random error
+
+% define distance measure
+\newcommand{\dist}{\ensuremath{d}}
+
+% define dimension symbol
+\newcommand{\dimS}{\ensuremath{N}} % change font for visual difference mathsf, mathbb, mathrm, mathtt
+
+% define number of Monte Carlo simulations
+\newcommand{\numMC}{\ensuremath{N_\mathrm{MC}}}
+
+% indicator function
+\newcommand{\indFunc}{\ensuremath{\mathds{1}}}
+
+% dimension operator
+\newcommand{\dimOp}{\ensuremath{\operatorname{dim}}}
+
+% flatten / vec operator
+\newcommand{\vecOp}{\ensuremath{\operatorname{vec}}}
+
+% define statistic
+\newcommand{\stat}{\ensuremath{T}}
+
+
+% define ANEES test statistic
+\newcommand{\tAnees}{\ensuremath{\stat_\mathrm{ANEES}}}
+
+% Gamma distribution
+\newcommand{\GammaDistIndex}{\ensuremath{\mathrm{Gam}}}
+\newcommand{\GammaShape}{\ensuremath{\alpha_{\GammaDistIndex}}}
+\newcommand{\GammaRate}{\ensuremath{\beta_{\GammaDistIndex}}} % rate = inverse scale
+\newcommand{\GammaDist}{\ensuremath{\operatorname{Gam}}}
+
+% paramters of folded normal distribution for 1-Wasserstein distance
+\newcommand{\WassOneFoldMu}{\ensuremath{\mu}}
+\newcommand{\WassOneFoldedSig}{\ensuremath{\sigma}}
+
+% True data-generating process (ground truth) index
+\newcommand{\TrueDataGenIndex}{\ensuremath{\GT}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{myblue}{named}{RoyalBlue}
+% \definecolor{myblue}{cmyk}{80,50,0,0} % KIT-BLAU
+
+% \definecolor{mygreen}{cmyk}{60,0,100,0} % KIT MAIGRÜN https://kit-cd.sts.kit.edu/341.php
+\definecolor{mygreen}{named}{LimeGreen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tikz symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define new command for purple rectangle symbol with pattern
+% \newcommand{\rectangleSymbolPurple}{%
+%     \begin{tikzpicture}[baseline=-0.ex]%
+%         \draw[
+%             thick, purple, preaction={color=purple, fill=purple,opacity=0.25,}, opacity=0.25, 
+%             pattern=north west lines, pattern color=purple,
+%         ]%
+%         (0,0) rectangle (0.2cm,0.2cm);%
+%     \end{tikzpicture}%
+% }%
+
+% Define new command for teal rectangle symbol with pattern
+% \newcommand{\rectangleSymbolTeal}{%
+%     \begin{tikzpicture}[baseline=-0.ex]%
+%         \draw[
+%             thick, color=teal, preaction={color=teal, fill=teal, opacity=0.25,}, fill=teal,
+%             opacity=0.25, pattern=crosshatch, pattern color=teal,
+%         ] (0,0) rectangle (0.2cm,0.2cm);%
+%     \end{tikzpicture}%
+% }%
+
+
+\newcommand{\highlight}[1]{%
+  \colorbox{gray!50}{$\displaystyle#1$}}
+
+
+
+% define density variables
+\newcommand{\pdf}{\ensuremath{f}} % probability density function
+
+% define proposal density for cross-entropy method (CEM)
+\newcommand{\cemPropPdf}{\ensuremath{\tilde{f}}} % proposal density
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% optimal control problem (OCP) variables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Horizon length
+\newcommand{\horizon}{\ensuremath{N}_{\mathrm{H}}} % horizon length
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CEM parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \newcommand{\cemPropMean}{\ensuremath{\evu}} %
+% \newcommand{\paramCEM}{\ensuremath{\vtheta}} % parameter vector of proposal density
+\newcommand{\numCEMIter}{\ensuremath{j}_\mathrm{max}} % number of CEM iterations
+\newcommand{\numCEMSamples}{\ensuremath{N}} %_\mathrm{CEM}} % number of CEM samples
+\newcommand{\numCEMElite}{\ensuremath{N_\mathrm{e}}} % number of CEM elite samples
+
+
+% optimization variable for CEM Method
+\newcommand{\optVarCemScalar}{\ensuremath{\xi}} % scalar optimization variable for CEM
+\newcommand{\vVarCem}{\ensuremath{\vec{\optVarCemScalar}}} % decision variable for CEM
+\newcommand{\rvVarCem}{\ensuremath{\rvec{\optVarCemScalar}}} % random decision variable for CEM
+\newcommand{\dimVarCem}{\ensuremath{d_{{\optVarCemScalar}}}} % dimension of decision variable for CEM
+\newcommand{\evVarCem}{\ensuremath{\mean{\vec{\optVarCemScalar}}}} % mean of the proposal distribution
+\newcommand{\paramCEM}{\ensuremath{\vtheta}} % parameter vector of proposal density
+% \newcommand{\realVarCem}{\ensuremath{\real{\optVarCemScalar}}} % realization of the proposal distribution
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% deterministic samples using LCD; parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% variable used for the space
+\newcommand{\lcdVarScalar}{\ensuremath{\xi}} % scalar variable for LCD
+\newcommand{\vVarLcd}{\ensuremath{\vec{\lcdVarScalar}}} % variable for LCD
+\newcommand{\evVarLcd}{\ensuremath{\mean{\vec{\lcdVarScalar}}}} % variable for LCD
+\newcommand{\dimVarLcd}{\ensuremath{d_{{\lcdVarScalar}}}} % dimension of variable for LCD
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dsMPPI parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\bufferSize}{\ensuremath{N_{\mathrm{Buffer}}}} % buffer size for dsMPPI
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Definitions for local LCD distance
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\dimX}{\ensuremath{d_x}}
+\newcommand{\dimY}{\ensuremath{d_y}}
+
+
+
+% density function name
+\newcommand{\density}{\ensuremath{f}}
+
+% Cramér--von Mises distance
+\newcommand{\Dcm}{\ensuremath{d_{\mathrm{CM}}}}
+\newcommand{\lcdDistPart}{\ensuremath{D}}
+
+% part of Cramér--von Mises distance before b integration (after m integration)
+\newcommand{\DcmInt}{\ensuremath{{I}}}
+
+
+% hybrid density
+\newcommand{\lblHyb}{\mathrm{H}}
+\newcommand{\fH}{\ensuremath{\density_{\lblHyb}}}
+\newcommand{\vxaug}{\ensuremath{\tilde{\vx}}}
+% num of discrete locations
+\newcommand{\lhyb}{\ensuremath{N}}
+% index for discrete locations in hybrid density
+\newcommand{\idxHyb}{\ensuremath{i}}
+
+% Continuous density label
+\newcommand{\lblCont}{\mathrm{C}}
+
+% Gaussian LCD index label
+\newcommand{\lblGauss}{\mathrm{G}}
+
+% dirac mixture label
+\newcommand{\lblDM}{\mathrm{DM}}
+\newcommand{\lblDirac}{\mathrm{D}}
+
+% positive real numbers
+\newcommand{\IRp}{\ensuremath{\IR_{+}}}
+
+%max bandwith
+\newcommand{\bmax}{\ensuremath{b_{\mathrm{max}}}}
+% define bandwidth max for LCD integration in input and output space
+\newcommand{\bmaxX}{\ensuremath{b^{\mathrm{max}}_{x}}}
+\newcommand{\bmaxY}{\ensuremath{b^{\mathrm{max}}_{y}}}
+% \newcommand{\bmaxX}{\ensuremath{b_{\mathrm{max}, x}}}
+% \newcommand{\bmaxY}{\ensuremath{b_{\mathrm{max}, y}}}
+
+% lcd kernel function
+\newcommand{\lcdKern}{\ensuremath{K}}
+\newcommand{\lcdFnc}{\ensuremath{F}}
+\newcommand{\kernCent}{\ensuremath{\vm}}
+
+% data set related
+% label
+\newcommand{\lblData}{\ensuremath{}} %\mathrm{Test}
+%number of samples (dirac mixture)
+\newcommand{\nTestData}{\ensuremath{N_{\lblData}}}
+
+
+% integral parts for local LCD distance
+\newcommand{\intLocalXn}[1]{\ensuremath{I_{#1,x}}}
+\newcommand{\intLocalXone}{\ensuremath{I_{1,x}}}
+\newcommand{\intLocalXtwo}{\ensuremath{I_{2,x}}}
+\newcommand{\intLocalXthree}{\ensuremath{I_{3,x}}}
+
+\newcommand{\intLocalYone}{\ensuremath{I_{1,y}}}
+\newcommand{\intLocalYtwo}{\ensuremath{I_{2,y}}}
+\newcommand{\intLocalYthree}{\ensuremath{I_{3,y}}}
+
+% LCD weighting function exponent
+\newcommand{\lcdWeightExpX}{\ensuremath{c_x}}
+\newcommand{\lcdWeightExpY}{\ensuremath{c_y}}
+
+% penalty term for boundary effects
+\newcommand{\lcdPenIdx}{{\mathrm{pen}}}
+\newcommand{\lcdPenDist}{\ensuremath{D_{\lcdPenIdx}}}
+\newcommand{\lcdPenFactor}{\ensuremath{\lambda_{\lcdPenIdx}}}
+\newcommand{\lcdPenThreshold}{\ensuremath{\tau_{\lcdPenIdx}}}
+\newcommand{\diffKernCenter}{\ensuremath{\Delta_x}}
+\newcommand{\diffKernCenterClip}{\ensuremath{\tilde{\Delta}_x}}
+
+% index set of data points used for penalty term 
+\newcommand{\lcdNearIdx}{\ensuremath{\mathrm{near}}}
+\newcommand{\lcdPenSet}{\ensuremath{\mathcal{I}_{\lcdNearIdx}}}
+% penalty weight factor resulting from whole penalty procedure
+\newcommand{\lcdPenWeight}{\ensuremath{w_{\lcdPenIdx}}}
+
+% special functions for local LCD distance
+\newcommand{\expInt}{\ensuremath{\operatorname{Ei}}} % exponential integral function
+
+% big O notation
+\newcommand{\bigO}{\ensuremath{\mathcal{O}}}

@@ -1,0 +1,139 @@
+% !TeX document-id = {311242bc-7738-4254-aff7-ef76fe45ce23}
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% magic comment to enable shell escape in TeXstudio
+% if VS code is used, see: https://tex.stackexchange.com/questions/516604/how-to-enable-shell-escape-or-write18-visual-studio-code-latex-workshop
+% For including a SVG file, Inkscape is used to separate the text and image from the SVG file itself. In order to use the command line interface on shell, the path where the executable is located has to be known to the operating system and is assumed to be inkscape by default.
+% You can check if the default setting is valid for your system by typing inkscape -V into the terminal. If this fails and nothing is returned, you should add the binary directory of Inkscape to the environment variable PATH on your operating system. For the case, that this is not possible or you aren’t willing to do so, you can alternatively pass option inkscapeexe to \svgsetup within the document preamble to set the absolute path where the executable of Inkscape is located
+% How to Add to Windows PATH Environment Variable https://helpdeskgeek.com/windows-10/add-windows-path-environment-variable/
+
+\RequirePackage{fix-cm}
+% \usepackage{anyfontsize} % allows any font size and prevents the previously existing font size warnings % outdated, leads to errors in e.g. sfrac
+% Use fix-cm instead of anyfontsize by adding \RequirePackage{fix-cm} at the beginning of the document (https://tex.stackexchange.com/questions/250332/anyfontsize-package-syntax https://tex.stackexchange.com/questions/98255/should-i-use-fix-cm)
+
+
+% \documentclass[conference]{IEEEtran}
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}
+% \documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unnecessary, please comment on it.
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% LaTeX packages, settings, definitions, and abbreviations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\input{settings/packages}
+
+% NOTE: For TikZ externalization to work on Overleaf the \tikzexternalize command must be given in the project’s main .tex file.
+% https://www.overleaf.com/learn/latex/Questions/I_have_a_lot_of_tikz%2C_matlab2tikz_or_pgfplots_figures%2C_so_I%27m_getting_a_compilation_timeout._Can_I_externalise_my_figures%3F
+% \usetikzlibrary{external}
+% \tikzexternalize[prefix=tikz_ext/]
+
+\input{settings/definitions}
+\input{settings/abbreviations}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Title, thanks, and authors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{%
+    \LARGE\bf% ieeeconf
+    Sampling-based Model Predictive Control Using Trust Regions
+%
+\author{Markus Walker, Marcel Reith-Braun, Daniel Frisch, and Uwe D. Hanebeck}
+\thanks{%
+    This work is part of the German Research Foundation (DFG) AI Research Unit 5339 regarding the combination of physics-based simulation with AI-based methodologies for the fast maturation of manufacturing processes.}% <-this % stops a space
+\thanks{%
+    Markus~Walker, Marcel~Reith-Braun, Daniel~Frisch, and Uwe~D.~Hanebeck are with the Intelligent Sensor-Actuator-Systems Laboratory (ISAS), Institute for Anthropomatics and Robotics, Karlsruhe Institute of Technology, Germany (e-mail:
+    \{%
+        {\tt\footnotesize firstname.lastname}%
+        % {\tt\footnotesize marcel.reith-braun},
+        % {\tt\footnotesize daniel.frisch}, 
+        % {\tt\footnotesize uwe.hanebeck}%
+    \}%
+    {\tt\footnotesize @kit.edu}%
+    ).%
+    }% <-this % stops a space
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% begin document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% abstract
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{sections/00_abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% key words
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{IEEEkeywords}
+\begin{keywords}
+    \Acl*{MPC}, trust region, deterministic sampling, \acl*{LCD}.
+\end{keywords}
+% \end{IEEEkeywords}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \todo[inline]{Dieser Kommentar wird als farbig hinterlegter Absatz in den Textfluss eingefügt} 
+% \todo{Dieser Kommentar wird auf den Seitenrand gequetscht.}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{sections/01_intro}
+\input{sections/02_ocp}
+\input{sections/03_related_work}
+\input{sections/04_tr_mpc}
+\input{sections/05_alg_improvements.tex}
+\input{sections/06_evaluation}
+% \input{sections/04_calibration_measures_sota}
+% \input{sections/05_new_multivariate_measures}
+% \input{sections/06_experiments}
+\input{sections/08_conclusion}
+\input{sections/98_appendix}
+\input{sections/99_acknowledgment}
+
+
+% \input{sections/04_1_uce.tex}
+
+\balance
+% \IEEEtriggeratref{2} % This is better than balance when IEEEtran is used. Set the number manually!
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% appendix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{sections/99_appendix}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% bibliography
+
+% \bibliographystyle{bib/IEEEtran_Capitalize}
+%\bibliographystyle{IEEEtran_Capitalize_less_authors} % use et al.
+% \bibliography{bib/literature}
+%\bibliography{literature.bib}
+
+% \bibliographystyle{IEEEtran}
+\bibliographystyle{bib/IEEEtran_Capitalize}
+\bibliography{IEEEabrv,bib/literature,bib/this_paper}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\end{document}

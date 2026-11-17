@@ -1,0 +1,1755 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>采样 MPC 知识树 · 从最优控制到加权采样</title>
+<meta name="description" content="以「一条主式、十二个推导、八个层级」重构采样 MPC 的概念体系。">
+<style>
+:root{
+  --bg:#fbfaf7; --panel:#ffffff; --ink:#1c1b18; --ink-2:#4a4741; --ink-3:#7a756c;
+  --line:#e3ded4; --line-2:#d0c9bc;
+  --accent:#0f5c55; --accent-2:#0a4540; --accent-bg:#eef5f3;
+  --warn:#8a4b0a; --warn-bg:#fdf4e8; --warn-line:#e7c79a;
+  --key:#3a2a6b; --key-bg:#f2effa; --key-line:#c9bde8;
+  --ok:#1f5c2a;
+  --mono:"IBM Plex Mono","SF Mono",Menlo,Consolas,monospace;
+  --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC","PingFang SC",Georgia,serif;
+  --sans:"Source Han Sans SC","Noto Sans CJK SC","PingFang SC","Helvetica Neue",Arial,sans-serif;
+  --math:"Cambria Math","Latin Modern Math","STIX Two Math","Times New Roman",var(--serif);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--serif);font-size:16.5px;line-height:1.78;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+/* ---------- layout ---------- */
+#nav{
+  position:fixed;top:0;left:0;bottom:0;width:270px;overflow-y:auto;
+  background:var(--panel);border-right:1px solid var(--line);
+  padding:22px 0 40px;font-family:var(--sans);font-size:13.5px;z-index:50;
+}
+#nav .brand{padding:0 20px 16px;border-bottom:1px solid var(--line);margin-bottom:12px}
+#nav .brand b{display:block;font-size:15px;letter-spacing:.01em}
+#nav .brand span{color:var(--ink-3);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+#nav ol{list-style:none;margin:0;padding:0}
+#nav li a{
+  display:flex;gap:9px;align-items:baseline;padding:5px 20px;color:var(--ink-2);
+  text-decoration:none;border-left:2px solid transparent;line-height:1.45;
+}
+#nav li a:hover{background:var(--accent-bg);color:var(--accent-2)}
+#nav li a.active{border-left-color:var(--accent);background:var(--accent-bg);color:var(--accent-2);font-weight:600}
+#nav .tag{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  min-width:22px;flex:0 0 auto;
+}
+#nav .sec{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding:16px 20px 6px}
+main{margin-left:270px;padding:0 0 120px}
+.wrap{max-width:820px;margin:0 auto;padding:0 34px}
+/* ---------- masthead ---------- */
+header.mast{
+  border-bottom:1px solid var(--line);background:var(--panel);
+  padding:44px 0 34px;margin-bottom:8px;
+}
+header.mast .kicker{font-family:var(--sans);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+header.mast h1{font-size:34px;line-height:1.25;margin:0 0 14px;letter-spacing:-.01em;font-weight:700}
+header.mast p.lede{font-size:17.5px;color:var(--ink-2);margin:0;max-width:60ch}
+header.mast .meta{font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:20px;display:flex;gap:18px;flex-wrap:wrap}
+/* ---------- headings ---------- */
+h2{
+  font-size:25px;margin:56px 0 6px;padding-top:14px;line-height:1.3;font-weight:700;
+  letter-spacing:-.005em;
+}
+h2 .num{font-family:var(--mono);font-size:13px;color:var(--accent);display:block;margin-bottom:6px;letter-spacing:.08em;font-weight:500}
+h3{font-size:18.5px;margin:34px 0 8px;font-weight:700;line-height:1.4}
+h3 .num{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);font-weight:500;margin-right:8px}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:700;color:var(--ink-2)}
+p{margin:0 0 14px}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+/* ---------- inline math ---------- */
+.m{font-family:var(--math);font-style:italic;white-space:nowrap;font-size:1.04em}
+.m b,.m .up{font-style:normal}
+.mi{font-family:var(--math);font-size:1.04em}
+code{font-family:var(--mono);font-size:.87em;background:#f1ede4;padding:1px 5px;border-radius:3px;color:#4a3a1a}
+/* ---------- display equation ---------- */
+.eq{
+  font-family:var(--math);font-size:17px;line-height:1.95;
+  background:#f7f4ed;border:1px solid var(--line);border-radius:6px;
+  padding:14px 20px;margin:16px 0;overflow-x:auto;text-align:center;
+  letter-spacing:.005em;
+}
+.eq .tag{float:right;font-family:var(--mono);font-style:normal;font-size:11.5px;color:var(--ink-3);margin-left:14px}
+.eq .lbl{display:block;font-style:normal;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);margin-top:6px;letter-spacing:.03em}
+.eq.small{font-size:15.5px}
+/* ---------- callouts ---------- */
+.box{border-radius:6px;padding:15px 19px;margin:18px 0;font-size:15.5px;line-height:1.75}
+.box p:last-child{margin-bottom:0}
+.box .h{font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;display:flex;gap:8px;align-items:center}
+.insight{background:var(--accent-bg);border:1px solid #bcd9d3;color:#123f3a}
+.insight .h{color:var(--accent-2)}
+.warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:#5c3306}
+.warn .h{color:var(--warn)}
+.key{background:var(--key-bg);border:1px solid var(--key-line);color:#2a1f52}
+.key .h{color:var(--key)}
+.plain{background:#f5f3ee;border:1px solid var(--line)}
+.plain .h{color:var(--ink-3)}
+/* ---------- derivation card ---------- */
+.deriv{
+  border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;background:var(--panel);
+  margin:22px 0;padding:2px 20px 6px;
+}
+.deriv>summary{
+  cursor:pointer;list-style:none;padding:13px 0 11px;font-family:var(--sans);
+  font-weight:700;font-size:15px;display:flex;gap:10px;align-items:baseline;
+}
+.deriv>summary::-webkit-details-marker{display:none}
+.deriv>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.deriv[open]>summary::before{content:"▾"}
+.deriv>summary .did{font-family:var(--mono);font-size:11.5px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:3px;font-weight:600;flex:0 0 auto}
+.deriv>summary .why{font-family:var(--sans);font-weight:400;font-size:12.5px;color:var(--ink-3);margin-left:auto;text-align:right}
+.deriv .body{padding-bottom:10px;border-top:1px dashed var(--line);padding-top:14px}
+.deriv .goal{font-size:15px;color:var(--ink-2);margin-bottom:10px}
+.deriv .goal b{color:var(--ink);font-family:var(--sans);font-size:12px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px;color:var(--ink-3)}
+.step{margin:12px 0;padding-left:38px;position:relative}
+.step>.sn{
+  position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
+  background:var(--accent-bg);border:1px solid #bcd9d3;color:var(--accent-2);
+  font-family:var(--mono);font-size:12px;display:grid;place-items:center;font-weight:600;
+}
+.step p{margin:0 0 8px}
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;font-family:var(--sans);line-height:1.55}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f2eee6;font-weight:700;font-size:12.5px;letter-spacing:.03em;color:var(--ink-2);border-bottom:1px solid var(--line-2)}
+tbody tr:hover{background:#faf8f3}
+td.m{font-family:var(--math);white-space:normal}
+.tight td,.tight th{padding:6px 9px}
+/* ---------- tree ---------- */
+.tree{font-family:var(--mono);font-size:12.8px;line-height:2.05;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 22px;overflow-x:auto;margin:20px 0;color:var(--ink-2)}
+.tree b{color:var(--accent-2);font-weight:600}
+.tree .d{color:var(--key)}
+.tree .q{color:var(--ink-3)}
+/* ---------- misc ---------- */
+.lede-note{font-size:15px;color:var(--ink-3);border-left:2px solid var(--line-2);padding-left:14px;margin:18px 0}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:3px;letter-spacing:.04em;vertical-align:1px}
+.pill.must{background:#dceee9;color:#0a4540}
+.pill.opt{background:#efece4;color:#6b655a}
+.pill.edge{background:#ece7f7;color:#3a2a6b}
+/* ---------- knowledge map ---------- */
+.map{margin:22px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:6px 0;overflow:hidden}
+.map .lv{padding:10px 22px;border-bottom:1px solid #f0ece3;position:relative}
+.map .lv:last-child{border-bottom:0}
+.map .lv::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+.map .lv:hover::before{background:var(--accent-bg)}
+.map .lh{font-family:var(--sans);font-size:15px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:2px}
+.map .lh .code{font-family:var(--mono);font-size:11.5px;font-weight:600;color:#fff;background:var(--accent);padding:2px 7px;border-radius:3px;letter-spacing:.04em}
+.map .lh b{font-weight:700;color:var(--ink)}
+.map .lh .say{font-size:12.5px;color:var(--ink-3);font-weight:400}
+.map ul{list-style:none;margin:4px 0 2px;padding:0 0 0 14px;border-left:1px solid var(--line-2);margin-left:26px}
+.map li{position:relative;font-size:14.5px;line-height:1.9;color:var(--ink-2);padding-left:14px}
+.map li::before{content:"";position:absolute;left:0;top:15px;width:8px;height:1px;background:var(--line-2)}
+.map .n{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-right:6px}
+.map .starrow{font-size:12px;color:var(--key);background:var(--key-bg);border:1px solid var(--key-line);padding:1px 6px;border-radius:3px;margin-left:8px;font-style:normal;white-space:nowrap}
+.map .dtag{font-family:var(--mono);font-size:10.5px;color:var(--accent-2);background:var(--accent-bg);border:1px solid #cfe3df;padding:0 5px;border-radius:3px;margin-left:6px;white-space:nowrap}
+@media(max-width:640px){.map ul{margin-left:14px}.map .lv{padding:10px 14px}}
+
+.chk{display:flex;gap:10px;align-items:flex-start;margin:7px 0;font-family:var(--sans);font-size:14.5px;line-height:1.5}
+.chk input{margin-top:5px;accent-color:var(--accent);width:15px;height:15px;flex:0 0 auto}
+.chk.done label{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--line-2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
+.grid2 .box{margin:0}
+footer{margin-top:70px;padding:28px 0 0;border-top:1px solid var(--line);font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+@media(max-width:900px){
+  #nav{transform:translateX(-100%);transition:transform .2s;width:250px}
+  #nav.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.15)}
+  main{margin-left:0}
+  .wrap{padding:0 20px}
+  header.mast h1{font-size:26px}
+  #navbtn{display:grid !important}
+}
+#navbtn{
+  display:none;position:fixed;top:14px;left:14px;z-index:60;width:40px;height:40px;
+  background:var(--panel);border:1px solid var(--line-2);border-radius:6px;
+  place-items:center;cursor:pointer;font-size:18px;color:var(--ink-2)
+}
+@media print{
+  #nav,#navbtn{display:none} main{margin:0} .deriv{break-inside:avoid} header.mast{padding-top:0}
+  .deriv>summary::before{content:""}
+}
+#top{position:fixed;right:22px;bottom:22px;width:38px;height:38px;border-radius:50%;
+  background:var(--panel);border:1px solid var(--line-2);display:grid;place-items:center;
+  cursor:pointer;font-size:15px;color:var(--ink-2);opacity:0;pointer-events:none;transition:opacity .2s}
+#top.show{opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+<button id="navbtn" aria-label="目录">☰</button>
+<button id="top" aria-label="回到顶部">↑</button>
+
+<nav id="nav">
+  <div class="brand">
+    <span>Knowledge Tree</span>
+    <b>采样 MPC 知识树</b>
+  </div>
+  <ol>
+    <div class="sec">导读</div>
+    <li><a href="#intro"><span class="tag">00</span>这份文档怎么用</a></li>
+    <li><a href="#tree"><span class="tag">01</span>全景：一条主式</a></li>
+    <div class="sec">主干</div>
+    <li><a href="#t0"><span class="tag">T0</span>数学底座</a></li>
+    <li><a href="#t1"><span class="tag">T1</span>从最优控制到目标分布</a></li>
+    <li><a href="#t2"><span class="tag">T2</span>更新引擎：加权与投影</a></li>
+    <li><a href="#t3"><span class="tag">T3</span>搜索地形与退火</a></li>
+    <div class="sec">分支</div>
+    <li><a href="#t4"><span class="tag">T4</span>多模态与均值陷阱</a></li>
+    <li><a href="#t5"><span class="tag">T5</span>约束与接触</a></li>
+    <li><a href="#t6"><span class="tag">T6</span>先验与模型</a></li>
+    <li><a href="#t7"><span class="tag">T7</span>闭环与系统</a></li>
+    <div class="sec">工具</div>
+    <li><a href="#cheat"><span class="tag">∑</span>推导速查表</a></li>
+    <li><a href="#papers"><span class="tag">▤</span>60 篇论文挂载表</a></li>
+    <li><a href="#route"><span class="tag">✓</span>四周学习路线</a></li>
+    <li><a href="#traps"><span class="tag">!</span>十个常见误解</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="mast">
+  <div class="wrap">
+    <div class="kicker">Sampling-based Model Predictive Control</div>
+    <h1>采样 MPC 知识树</h1>
+    <p class="lede">把整个领域压成一条式子：在可采样分布族上，反复对「代价诱导的 Gibbs 目标」做投影。所有论文只是这条式子上的不同选择。</p>
+    <div class="meta">
+      <span>8 个层级 · 14 个可手推的推导</span>
+      <span>60 篇本地论文挂载</span>
+      <span>离线 · 无外部依赖</span>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+
+<h2 id="intro"><span class="num">00 · 导读</span>这份文档怎么用</h2>
+
+<p>你手上原本那份知识库（<code>SMPC_Theory_Knowledge_Base.html</code>，27 万字）是按<strong>论文</strong>组织的：D-MPC 一章、DIAL-MPC 一章、Tsallis 一章。它作为<em>精读参考</em>是合格的，但作为<em>学习路径</em>是失效的——因为同一个概念会分散出现在五篇论文的 §III，而真正该先读的那一步，反而埋在某篇附录里。读者的感受是"每段都读懂了，合起来不知道在干什么"。</p>
+
+<p>这份重写的核心动作只有一个：<strong>把组织轴从"论文"换成"依赖关系"</strong>。先给出一个所有方法共用的骨架，再让每篇论文回答"我在骨架的哪个位置做了不同选择"。这样你读完任何一个方法，都是在往同一个坐标系里放东西，而不是新建一个坐标系。</p>
+
+<div class="grid2">
+  <div class="box plain">
+    <div class="h">旧结构的问题</div>
+    <p>按论文分章 → 概念重复、依赖倒置、推导被切碎在附录里、无法判断一篇新论文的定位。</p>
+  </div>
+  <div class="box insight">
+    <div class="h">新结构的解法</div>
+    <p>先立一条主式（<a href="#tree">§01</a>），再把数学底座、目标构造、更新引擎、地形、多模态、约束、先验、闭环八层依次挂上去。每层只解决上一层留下的一个问题。</p>
+  </div>
+</div>
+
+<h4>三种读法</h4>
+<table class="tight">
+<tr><th style="width:22%">如果你…</th><th>怎么读</th></tr>
+<tr><td><b>只有两天</b></td><td>§01 全景 → <span class="pill must">D1</span><span class="pill must">D2</span><span class="pill must">D3</span><span class="pill must">D4</span> 四个推导 → §T2 方法对照表。够你在组会上讲清 MPPI 到底在算什么。</td></tr>
+<tr><td><b>要动手实现</b></td><td>§T2 全部 + <span class="pill must">D7</span>（收缩率，决定你的调参直觉）+ §T7 + §cheat 速查表。</td></tr>
+<tr><td><b>要做研究</b></td><td>顺序通读，重点是 §T3 地形、§T4 多模态、§T5 约束三章——现有 60 篇论文里未被解决的问题几乎都在这三层。</td></tr>
+</table>
+
+<div class="box warn">
+<div class="h">读之前先接受一件事</div>
+<p>采样 MPC <strong>没有</strong>一个像 LQR 那样统一的定理体系。它更像一个<em>算法家族</em>：共享同一条更新式，但收敛性、最优性、稳定性各自在不同假设下成立，而且大多只在线性二次、无限样本、凸域这些理想条件里有正面结论。看到论文里出现"等价于""provably"这类词，第一反应应该是去问假设，而不是记住结论。</p>
+</div>
+
+<h2 id="tree"><span class="num">01 · 全景</span>一条主式，八个层级</h2>
+
+<p>先看结论。整个语料里 60 篇论文，剥掉各自的应用背景和工程技巧，剩下的数学内核是<strong>同一条更新式</strong>：</p>
+
+<div class="eq">
+q<sub>m+1</sub> = Proj<sub>Π</sub> [ ∑<sub>i=1</sub><sup>N</sup> w<sub>i</sub> · δ<sub>U<sub>i</sub></sub> ] ,
+&nbsp;&nbsp; w<sub>i</sub> ∝ <span style="font-style:normal">ρ</span>(U<sub>i</sub>) · exp( −J(U<sub>i</sub>)/λ ) / q<sub>m</sub>(U<sub>i</sub>)
+<span class="lbl">主式 · 一次采样 MPC 迭代的全部内容</span>
+</div>
+
+<p>读法只有三个动作：<strong>采一批</strong>（从当前 q<sub>m</sub>）→ <strong>打分</strong>（用代价 J 和温度 λ 重加权）→ <strong>投回去</strong>（把带权经验测度投影回某个可采样族 Π）。第 m+1 轮重复。滚动 MPC 则是把这一坨塞进"执行首动作、窗口前移"的外壳里。</p>
+
+<p>目标分布没有单独出现，因为它是被"打分"这一步隐式定义的：</p>
+
+<div class="eq">
+p<sup>*</sup>(U) ∝ <span style="font-style:normal">ρ</span>(U) · exp( −J(U)/λ )
+<span class="lbl">目标 · 代价的 Gibbs 变换（也叫指数倾斜、softmin、玻尔兹曼分布）</span>
+</div>
+
+<p>于是"采样 MPC 怎么工作"可以浓缩成一句：<em>你不知道 p<sup>*</sup> 怎么采样，但你会算 p<sup>*</sup> 的未归一化密度（因为有 J 和模型），于是用 q<sub>m</sub> 去提样本、用密度比去修正、再把结果压回 q 所在的族</em>。这就是重要性采样 + 变分投影。剩下的全部是细节。</p>
+
+<div class="box insight">
+<div class="h">为什么这条式子能统一全部论文</div>
+<p>把主式拆成六个独立旋钮，每个旋钮就是一种设计空间。任何一个方法（已有的或你以后要读的）都能用六元组定位：</p>
+<table class="tight" style="margin:10px 0 0;font-size:13.5px">
+<tr><th style="width:16%">旋钮</th><th style="width:40%">可选值</th><th>决定什么</th></tr>
+<tr><td><b>目标</b></td><td>λ 的取值、风险度量、约束编码、先验 ρ</td><td>你在逼近哪个分布</td></tr>
+<tr><td><b>散度</b></td><td>前向 KL、反向 KL、Tsallis、Stein、最优传输、SMC</td><td>投影时保形状还是保质量</td></tr>
+<tr><td><b>族 Π</b></td><td>单高斯、高斯混合、粒子集、扩散过程、样条基</td><td>一次能表达几种模式</td></tr>
+<tr><td><b>权重 w</b></td><td>指数权重、精英 0-1 截断、CVaR 尾部、梯度导引</td><td>怎样把代价变成质量</td></tr>
+<tr><td><b>投影算法</b></td><td>闭式矩匹配、精英矩估计、Sinkhorn、MCMC、直接选优</td><td>每轮的计算与误差</td></tr>
+<tr><td><b>尺度调度</b></td><td>固定、温度退火、协方差退火、信任域</td><td>覆盖与收敛的权衡</td></tr>
+</table>
+</div>
+
+<h3>知识树骨架</h3>
+
+<p>八个层级依次回答一个问题：<strong>T0</strong> 用什么工具？<strong>T1</strong> 要逼近什么？<strong>T2</strong> 怎么更新？<strong>T3</strong> 更新的地形长什么样？<strong>T4</strong> 地形多峰怎么办？<strong>T5</strong> 有约束怎么办？<strong>T6</strong> 样本从哪来？<strong>T7</strong> 怎么接进闭环？每一层都只解决上一层留下的一个缺口。</p>
+
+<div class="map">
+  <div class="lv">
+    <div class="lh"><span class="code">T0</span><b>数学底座</b><span class="say">只学后面用得到的四条</span></div>
+    <ul>
+      <li><span class="n">0.1</span>三种基本操作：采样、求期望、拟合</li>
+      <li><span class="n">0.2</span><b>KL 的两个方向</b><span class="starrow">全篇最关键的单一事实</span></li>
+      <li><span class="n">0.3</span>自由能恒等式<span class="dtag">D1</span></li>
+      <li><span class="n">0.4</span>重要性采样、自归一化、ESS、维度诅咒<span class="dtag">D2</span></li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T1</span><b>目标</b><span class="say">为什么优化问题会变成分布</span></div>
+    <ul>
+      <li><span class="n">1.1</span>三条独立来路：变分推断 / 路径积分 / 扩散反向过程<span class="dtag">D1</span><span class="dtag">D3</span><span class="dtag">D8</span></li>
+      <li><span class="n">1.2</span>λ 的两个身份：温度 与 物理噪声方差</li>
+      <li><span class="n">1.3</span>λ→0 的集中性与 λ→∞ 的退化<span class="dtag">D4</span></li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T2</span><b>更新引擎</b><span class="say">主式的四个具体实例</span></div>
+    <ul>
+      <li><span class="n">2.1</span>前向 KL ⇒ 矩匹配 ⇒ MPPI 的均值平移<span class="dtag">D5</span><span class="dtag">D6</span></li>
+      <li><span class="n">2.2</span>精英截断 ⇒ CEM；尾部 ⇒ 风险敏感</li>
+      <li><span class="n">2.3</span>反向 KL ⇒ 模式寻求 ⇒ 为什么需要多模态处理</li>
+      <li><span class="n">2.4</span>温度、协方差、ESS 三者的耦合</li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T3</span><b>搜索地形</b><span class="say">为什么同一算法有时神有时废</span></div>
+    <ul>
+      <li><span class="n">3.1</span>平滑密度与它的得分<span class="dtag">D6</span><span class="dtag">D8</span></li>
+      <li><span class="n">3.2</span>MPPI 更新 = 平滑目标的一次精确前向投影<span class="dtag">D6</span></li>
+      <li><span class="n">3.3</span>退火：大核覆盖 vs 小核精修<span class="dtag">D7</span></li>
+      <li><span class="n">3.4</span>缩小方差的悖论：收缩率 (I+ΣA/λ)⁻¹<span class="dtag">D9</span></li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T4</span><b>多模态</b><span class="say">均值陷阱的六种出路</span></div>
+    <ul>
+      <li><span class="n">4.1</span>陷阱的数学刻画：两峰均值落谷底<span class="dtag">D10</span></li>
+      <li><span class="n">4.2</span>选优（不平均） · <span class="n">4.3</span>聚类 · <span class="n">4.4</span>混合族</li>
+      <li><span class="n">4.5</span>粒子排斥（Stein / SVGD）<span class="dtag">D13</span></li>
+      <li><span class="n">4.6</span>最优传输（Sinkhorn）<span class="dtag">D11</span> · <span class="n">4.7</span>序贯蒙特卡洛（SMC）</li>
+      <li><span class="n">4.8</span>提议≠基准时的权重修正<span class="dtag">D12</span></li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T5</span><b>约束与接触</b><span class="say">非光滑为什么反而是优势</span></div>
+    <ul>
+      <li><span class="n">5.1</span>三种编码：惩罚 / 支持域 / 投影</li>
+      <li><span class="n">5.2</span>为什么"投影后平均"不再是合法投影<span class="dtag">D14</span></li>
+      <li><span class="n">5.3</span>接触隐式：非光滑反而是采样法的优势</li>
+      <li><span class="n">5.4</span>多重打靶与可行性</li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T6</span><b>先验与模型</b><span class="say">ρ 是隐藏的第五个旋钮</span></div>
+    <ul>
+      <li><span class="n">6.1</span>ρ 的四类来源：名义解 / 样条基 / 生成模型 / 世界模型</li>
+      <li><span class="n">6.2</span>生成先验与任务代价的分离（D-MPC 路线）</li>
+      <li><span class="n">6.3</span>先验错配 ⇒ 有效搜索体积坍缩；模型误差 ⇒ 等效温度倾斜</li>
+    </ul>
+  </div>
+  <div class="lv">
+    <div class="lh"><span class="code">T7</span><b>闭环与系统</b><span class="say">把开环迭代塞进滚动决策</span></div>
+    <ul>
+      <li><span class="n">7.1</span>重规划、首动作、窗口前移与热启动</li>
+      <li><span class="n">7.2</span>稳定性与递归可行性：什么时候真的没有保证</li>
+      <li><span class="n">7.3</span>算力预算：N × H × 仿真成本 与并行上限</li>
+    </ul>
+  </div>
+</div>
+
+<div class="box key">
+<div class="h">立刻可用的判据</div>
+<p>以后读任何一篇采样规划论文，先问四个问题：<strong>(1)</strong> 它把 p<sup>*</sup> 定义成什么（λ 多大、有没有风险项、约束怎么进）？<strong>(2)</strong> 它用什么散度投影（这直接决定会不会踩均值陷阱）？<strong>(3)</strong> 它的族 Π 能表达几个模式？<strong>(4)</strong> 尺度是固定的还是退火的？四问答完，这篇论文的创新点和局限基本就清楚了，不需要读完全文。</p>
+</div>
+<h2 id="t0"><span class="num">T0 · 数学底座</span>只学后面真正用得到的四件事</h2>
+
+<p>采样 MPC 用到的数学，说到底是四样东西：<strong>期望</strong>、<strong>KL 的两个方向</strong>、<strong>一个自由能恒等式</strong>、<strong>重要性采样</strong>。其余都是这四样的组合。这一层不要跳，尤其是 KL 的方向——整个多模态文献（B 文件夹里 8 篇）存在的唯一理由，就是前向 KL 和反向 KL 会给出完全不同的投影结果。</p>
+
+<h3><span class="num">0.1</span>三种基本操作</h3>
+
+<p>任何采样方法都在做这三件事的某种组合：</p>
+
+<table class="tight">
+<tr><th style="width:20%">操作</th><th style="width:34%">记号</th><th>在采样 MPC 里的角色</th></tr>
+<tr><td><b>采样</b></td><td class="m">U<sub>1</sub>,…,U<sub>N</sub> ~ q<sub>m</sub></td><td>从当前提议分布抽一批候选轨迹</td></tr>
+<tr><td><b>求期望</b></td><td class="m">E<sub>q</sub>[ f(U) ] = ∫ f(U) q(U) dU</td><td>估计"下一轮的中心应该在哪"</td></tr>
+<tr><td><b>拟合</b></td><td class="m">q<sub>m+1</sub> = argmin<sub>q∈Π</sub> D( p<sup>*</sup> ‖ q )</td><td>把带权样本压回可采样的族</td></tr>
+</table>
+
+<p>"拟合"这一步是全体方法的分水岭：<em>用哪个散度 D、投影到哪个族 Π</em>，决定了你不会踩均值陷阱、能不能处理约束、要多少样本。这也是为什么下面要花整整一节讲 KL 的方向。</p>
+
+<h3><span class="num">0.2</span>KL 的两个方向：全篇最关键的单一事实</h3>
+
+<div class="eq">
+D<sub>KL</sub>(P‖Q) = E<sub>P</sub>[ log P(U) − log Q(U) ] = ∫ P log(P/Q)
+<span class="lbl">KL 不是距离：D<sub>KL</sub>(P‖Q) ≠ D<sub>KL</sub>(Q‖P)，而且两者会选出完全不同的 Q</span>
+</div>
+
+<p>把 P 看成固定的目标 p<sup>*</sup>，Q 看成你受限的族（比如单高斯）。两个方向各有一个别名，记住别名比记公式有用：</p>
+
+<table class="tight">
+<tr><th style="width:26%">方向</th><th style="width:24%">别名</th><th>行为</th><th style="width:30%">实际后果</th></tr>
+<tr>
+  <td><b>前向</b> D<sub>KL</sub>(p<sup>*</sup>‖q)</td>
+  <td>矩投影 / 质量覆盖<br><span style="color:var(--ink-3)">moment projection</span></td>
+  <td>P 有质量的地方 Q 必须有质量（否则 log Q → −∞，罚无穷大）。<b>零回避</b>。</td>
+  <td>双峰目标 + 单高斯族 ⇒ 高斯被拉宽去盖住两个峰，<b>均值落在两峰之间</b>。这就是均值陷阱。</td>
+</tr>
+<tr>
+  <td><b>反向</b> D<sub>KL</sub>(q‖p<sup>*</sup>)</td>
+  <td>信息投影 / 模式寻求<br><span style="color:var(--ink-3)">information projection</span></td>
+  <td>Q 有质量的地方 P 必须有质量（否则 log q/p<sup>*</sup> → +∞）。<b>零强制</b>。</td>
+  <td>单高斯会<b>挑一个峰</b>贴上去，忽略另一个。想要多样性就必须显式加机制（粒子、混合、传输）。</td>
+</tr>
+</table>
+
+<div class="box insight">
+<div class="h">一句话记住</div>
+<p><strong>前向 KL 求平均，反向 KL 挑一个。</strong>MPPI 的更新式本质上是前向 KL 的矩匹配，所以它天生会把两条低代价路线平均成一条中间的烂路线；这不是实现 bug，是散度选错了。B 文件夹里所有"多模态"论文，都是在修这件事。</p>
+</div>
+
+<p>还有一个容易忽略的点：前向 KL 在高斯族上的解，就是<strong>矩匹配</strong>——均值和协方差分别等于目标的均值和协方差（推导见 <a href="#d5">D5</a>）。这解释了为什么 CEM 会去算精英样本的经验均值和经验协方差：它不是启发式，是前向 KL 在黎曼意义下的精确解。</p>
+
+<h3><span class="num">0.3</span>自由能恒等式（D1）</h3>
+
+<details class="deriv" id="d1" open>
+<summary><span class="did">D1</span>为什么"最小化代价"会变成一个"分布"<span class="why">变分路线 · 全篇地基</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>证明 <span class="m">min<sub>q</sub> E<sub>q</sub>[J] + λ D<sub>KL</sub>(q‖ρ)</span> 的唯一解是 <span class="m">p<sup>*</sup>(U) ∝ ρ(U) e<sup>−J(U)/λ</sup></span>，并把最小值写成配分函数的对数。</div>
+
+<div class="step"><span class="sn">1</span>
+<p>把 KL 展开，把三项并进一个对数里：</p>
+<div class="eq small">
+F(q) = E<sub>q</sub>[J] + λ E<sub>q</sub>[ log q − log ρ ]
+= λ E<sub>q</sub>[ log q − log ρ + J/λ ]
+</div>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p>定义未归一化目标 <span class="m">g(U) = ρ(U) e<sup>−J(U)/λ</sup></span>，配分函数 <span class="m">Z = ∫ g(U) dU</span>。则 <span class="m">log g = log ρ − J/λ</span>，代回：</p>
+<div class="eq small">
+F(q) = λ E<sub>q</sub>[ log q − log g ]
+= λ E<sub>q</sub>[ log q − log( g/Z ) ] − λ log Z
+= λ D<sub>KL</sub>( q ‖ p<sup>*</sup> ) − λ log Z
+</div>
+<p>其中 <span class="m">p<sup>*</sup> = g/Z</span> 已自动归一化。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p>因为 <span class="m">D<sub>KL</sub> ≥ 0</span> 且等号仅在 <span class="m">q = p<sup>*</sup></span> 时成立，所以</p>
+<div class="eq small">
+min<sub>q</sub> F(q) = −λ log Z = −λ log ∫ ρ(U) e<sup>−J(U)/λ</sup> dU ,
+&nbsp;&nbsp; argmin = p<sup>*</sup> .
+</div>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p>读出两件事。<strong>(a)</strong> 目标分布是代价的指数倾斜。<strong>(b)</strong> 最小值 <span class="m">−λ log Z</span> 就是 <em>softmin</em>：λ→0 时它趋近 <span class="m">min<sub>U</sub> J(U)</span>，λ→∞ 时趋近常数（见 <a href="#d4">D4</a>）。</p>
+</div>
+
+<div class="box plain">
+<div class="h">这个式子在别的领域叫什么</div>
+<p>Gibbs 变分原理 / Donsker–Varadhan 变分表示 / 变分自由能。物理里是 Helmholtz 自由能 <span class="m">F = U − TS</span>（能量项 <span class="m">E<sub>q</sub>[J]</span>、熵项 <span class="m">−λD<sub>KL</sub></span>）；机器学习里是 ELBO 的负号版本；强化学习里是 max-entropy RL 的目标。同一个式子，四个名字。认出这一点，你看论文时就不会被术语挡住。</p>
+</div>
+
+<div class="box warn">
+<div class="h">别误解"解是 p<sup>*</sup>"</div>
+<p>D1 说的是<strong>在无约束的全体分布上</strong>最小化自由能，解才是 p<sup>*</sup>。实际算法把 q 限制在一个小族 Π（单高斯）里，这时解是 p<sup>*</sup> 在 Π 上的<em>投影</em>，而不是 p<sup>*</sup> 本身。λ→0 时投影会趋于把全部质量压到一个点上，那才是"优化"；λ 有限时你解的是一个<em>软</em>问题，最优点附近整片区域都有质量。这个区别是后面所有"为什么它不收敛到真最优"讨论的根源。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">0.4</span>重要性采样与有效样本数（D2）</h3>
+
+<details class="deriv" id="d2">
+<summary><span class="did">D2</span>为什么高维下采样会"看起来在跑，其实没信息"<span class="why">估计器 · 解释维度灾难</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>用提议 q 的样本估计 p<sup>*</sup> 下的期望，并给出一个可在线监控的退化指标。</div>
+
+<div class="step"><span class="sn">1</span>
+<p>重要性采样恒等式（对任意 q，只要 p<sup>*</sup> 绝对连续于 q）：</p>
+<div class="eq small">
+E<sub>p<sup>*</sup></sub>[ f(U) ] = E<sub>q</sub>[ f(U) · p<sup>*</sup>(U)/q(U) ] .
+</div>
+<p>记 <span class="m">w<sub>i</sub> = p<sup>*</sup>(U<sub>i</sub>)/q(U<sub>i</sub>)</span>。因为 Z 未知，实际用<strong>自归一化</strong>版本：</p>
+<div class="eq small">
+ŵ<sub>i</sub> = w<sub>i</sub> / ∑<sub>j</sub> w<sub>j</sub> ,
+&nbsp;&nbsp; Ê[f] = ∑<sub>i</sub> ŵ<sub>i</sub> f(U<sub>i</sub>) .
+</div>
+<p>偏差是 O(1/N)，对规划够用。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p>定义一个不需要知道 p<sup>*</sup> 归一化常数的退化指标——<strong>有效样本数</strong>：</p>
+<div class="eq small">
+ESS = 1 / ∑<sub>i</sub> ŵ<sub>i</sub><sup>2</sup> ∈ [1, N] .
+</div>
+<p>所有权重相等时 ESS = N；一个权重吃掉全部质量时 ESS = 1。它是"这 N 个样本里真正有用的有几个"。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p>方差与维度的关系。单样本 IS 估计量的方差是</p>
+<div class="eq small">
+Var<sub>q</sub>[ f · p<sup>*</sup>/q ] = E<sub>q</sub>[ f<sup>2</sup> (p<sup>*</sup>/q)<sup>2</sup> ] − (E<sub>p<sup>*</sup></sub>[f])<sup>2</sup> ,
+</div>
+<p>其相对大小由 <span class="m">χ<sup>2</sup>(p<sup>*</sup>‖q) = E<sub>q</sub>[(p<sup>*</sup>/q)<sup>2</sup>] − 1</span> 控制。当 q 与 p<sup>*</sup> 在每个坐标上有 ε 的差异时，<span class="m">χ<sup>2</sup></span> 大致按 <span class="m">(1+ε)<sup>d</sup></span> 增长——<strong>维数 d 在指数上</strong>。这就是为什么</p>
+<div class="box warn">
+<div class="h">维度诅咒的准确说法</div>
+<p>不是"高维不能采样"，而是"<em>提议与目标不匹配时</em>，固定 N 的有效样本数随维度指数衰减"。反过来说，只要你把采样做在低维参数空间里（样条系数、动作块、基函数），或者让提议随目标一起移动（退火、热启动），问题就缓解了。A 文件夹里的 iCEM、低频采样、确定性采样，本质都在做这件事。</p>
+</div>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p>工程经验值：<span class="m">ESS/N &gt; 0.1</span> 一般还能用，低于 0.01 基本是在用一两个样本做决策。实践中应该把 ESS 打到日志里，和 N、λ、Σ 一起看——它比任何"收敛曲线"更能说明当前搜索是否真的在工作。</p>
+</div>
+</div>
+</details>
+
+<div class="box key">
+<div class="h">T0 的自检题</div>
+<p>① 不看笔记，写出自由能恒等式的三步推导。② 给定双峰目标和一个单高斯族，前向 KL 和反向 KL 的解分别在哪个位置？③ 为什么 <span class="m">λ</span> 和 <span class="m">Σ</span> 在二次代价下只以 <span class="m">Σ/λ</span> 的形式出现（先猜，<a href="#d9">D9</a> 会证）？④ ESS=3 而 N=1024，最可能的原因是什么？</p>
+</div>
+
+<h2 id="t1"><span class="num">T1 · 目标</span>最优控制为什么会变成一个分布</h2>
+
+<p>T0 给了"如果目标是 p<sup>*</sup>，怎么更新"。但为什么目标是 p<sup>*</sup>？这件事有三条<em>互不依赖</em>的来路，都指向同一个指数形式。理解三条来路的价值在于：它们各自附带了不同的假设，而论文的适用范围就写在这些假设里。</p>
+
+<h3><span class="num">1.1</span>三条来路，同一个结果</h3>
+
+<table>
+<tr><th style="width:16%">来路</th><th style="width:30%">出发点</th><th style="width:28%">核心假设</th><th>它额外告诉你什么</th></tr>
+<tr>
+  <td><b>变分推断</b><br><span style="color:var(--ink-3)">D1</span></td>
+  <td>最小化 <span class="m">E<sub>q</sub>[J] + λD<sub>KL</sub>(q‖ρ)</span></td>
+  <td>存在先验 ρ；q 可自由选</td>
+  <td>λ 是"信任先验的程度"，天然给出正则化与风险解释</td>
+</tr>
+<tr>
+  <td><b>路径积分</b><br><span style="color:var(--ink-3)">D3</span></td>
+  <td>随机最优控制的 HJB 方程</td>
+  <td>控制代价与噪声匹配：<span class="m">GR<sup>−1</sup>G<sup>⊤</sup> ∝ BB<sup>⊤</sup>/λ</span></td>
+  <td>λ 就是<em>物理噪声方差</em>；指数权重是 Feynman–Kac 的必然结果，不是设计选择</td>
+</tr>
+<tr>
+  <td><b>扩散反向</b><br><span style="color:var(--ink-3)">D7</span></td>
+  <td>去噪后验 <span class="m">q(z<sub>0</sub>|y)</span></td>
+  <td>前向过程是已知的高斯加噪</td>
+  <td>λ 对应噪声日程；"退火"就是反向扩散，有现成的理论保证</td>
+</tr>
+</table>
+
+<p>这张表最重要的读法是：<strong>路径积分路线给出的 λ 是物理量，变分路线给出的 λ 是算法超参</strong>。同一个符号，两种身份。当论文说"λ 由系统噪声决定"时，它走的是第二条路；说"λ 是温度，需要调"时，走的是第一条。混用会导致完全错误的调参直觉。</p>
+
+<h3><span class="num">1.2</span>路径积分路线（D3）</h3>
+
+<details class="deriv" id="d3">
+<summary><span class="did">D3</span>HJB 怎样变成"指数加权平均"<span class="why">路径积分 · 解释 MPPI 的物理来源</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>在受控扩散系统上，证明当控制代价与噪声匹配时，HJB 方程线性化，最优控制可以写成对采样扰动的指数加权平均。</div>
+
+<div class="step"><span class="sn">1</span>
+<p>系统与代价。受控扩散</p>
+<div class="eq small">
+dx = ( f(x) + G(x)u ) dt + B(x) dW<sub>t</sub> ,
+&nbsp;&nbsp; cost = ∫<sub>0</sub><sup>T</sup> ( ℓ(x<sub>t</sub>) + ½ u<sup>⊤</sup>R u ) dt + φ(x<sub>T</sub>) .
+</div>
+<p>值函数 <span class="m">V(x,t)</span> 满足 HJB：</p>
+<div class="eq small">
+−∂<sub>t</sub>V = min<sub>u</sub> { ℓ + ½u<sup>⊤</sup>Ru + ∇V<sup>⊤</sup>(f+Gu) + ½ tr(BB<sup>⊤</sup>∇<sup>2</sup>V) } .
+</div>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p>对 u 求最小：<span class="m">Ru + G<sup>⊤</sup>∇V = 0 ⇒ u<sup>*</sup> = −R<sup>−1</sup>G<sup>⊤</sup>∇V</span>。代回得到一个<em>非线性</em> PDE，里面有一项 <span class="m">−½ ∇V<sup>⊤</sup>G R<sup>−1</sup>G<sup>⊤</sup>∇V</span>。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>关键的线性化技巧。</strong>若<em>控制代价与噪声匹配</em>，即存在常数 λ 使</p>
+<div class="eq small">
+G R<sup>−1</sup> G<sup>⊤</sup> = (1/λ) B B<sup>⊤</sup> ,
+</div>
+<p>则二次项 <span class="m">−½λ<sup>−1</sup>∇V<sup>⊤</sup>BB<sup>⊤</sup>∇V</span> 与扩散二阶项 <span class="m">½ tr(BB<sup>⊤</sup>∇<sup>2</sup>V)</span> 可以合并。作变换 <span class="m">V = −λ log Ψ</span>，则 <span class="m">∇V = −λ∇Ψ/Ψ</span>、<span class="m">∇<sup>2</sup>V = −λ(∇<sup>2</sup>Ψ/Ψ − ∇Ψ∇Ψ<sup>⊤</sup>/Ψ<sup>2</sup>)</span>，代回后二次项精确抵消，得到<strong>线性</strong>方程</p>
+<div class="eq small">
+−∂<sub>t</sub>Ψ = f<sup>⊤</sup>∇Ψ + ½ tr(BB<sup>⊤</sup>∇<sup>2</sup>Ψ) − (ℓ/λ) Ψ .
+</div>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p>线性抛物型方程由 Feynman–Kac 给出路径期望解：</p>
+<div class="eq small">
+Ψ(x,t) = E[ exp( −(1/λ)( ∫<sub>t</sub><sup>T</sup> ℓ ds + φ ) ) | x<sub>t</sub> = x ] ,
+</div>
+<p>期望取在<em>无控制</em>的扩散 <span class="m">dx = f dt + B dW</span> 上。然后 <span class="m">u<sup>*</sup> = −R<sup>−1</sup>G<sup>⊤</sup>∇V = λR<sup>−1</sup>G<sup>⊤</sup>∇Ψ/Ψ</span>，而对数导数 <span class="m">∇Ψ/Ψ</span> 通过沿噪声路径的分部积分，变成"轨迹代价的指数加权平均"。</p>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p>离散化到 MPPI 的形式。取名义控制 <span class="m">ū</span>，扰动 <span class="m">W<sub>i</sub> ~ N(0,Σ)</span>，候选 <span class="m">U<sub>i</sub> = ū + W<sub>i</sub></span>，则最优更新是</p>
+<div class="eq small">
+ū<sup>new</sup> = ū + <span style="font-style:normal">E</span>[ W e<sup>−J(ū+W)/λ</sup> ] / <span style="font-style:normal">E</span>[ e<sup>−J(ū+W)/λ</sup> ] ,
+</div>
+<p>这正是 MPPI 的更新式（有限样本时把期望换成样本均值）。<strong>于是 MPPI 不是启发式，它是路径积分控制在离散、高斯扰动下的实例。</strong></p>
+</div>
+
+<div class="box warn">
+<div class="h">这条来路的边界</div>
+<p>D3 成立需要三个条件：<strong>(1)</strong> 控制代价是二次的且与噪声<em>精确匹配</em>（<span class="m">GR<sup>−1</sup>G<sup>⊤</sup> = BB<sup>⊤</sup>/λ</span>）；<strong>(2)</strong> 扩散是布朗运动（高斯白噪声）；<strong>(3)</strong> 期望在无穷多样本上取。真实机器人上这三条<em>全都不严格成立</em>：代价不是二次的、噪声不是高斯的、样本有限。所以 D3 给你的不是"MPPI 最优"，而是"MPPI 在一个理想化问题上的最优解长什么样"。理解这一点，你就不会把 MPPI 的失败归咎于实现，也不会相信论文里"最优"的字面意思。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">1.3</span>温度的极限：λ 到底控制什么（D4）</h3>
+
+<details class="deriv" id="d4">
+<summary><span class="did">D4</span>λ→0 与 λ→∞ 两端分别发生什么<span class="why">极限 · 调参的第一性依据</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>给出 <span class="m">p<sup>*</sup> ∝ ρe<sup>−J/λ</sup></span> 在两个极限下的行为，并导出"λ 应该取多大"的可操作判据。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>λ→0：集中到全局最优。</strong>设 J 有唯一全局最小点 <span class="m">U<sup>*</sup></span>（在 ρ 支撑内），则对任意 ε&gt;0，</p>
+<div class="eq small">
+p<sup>*</sup>( ‖U−U<sup>*</sup>‖ &gt; ε ) → 0 ,
+&nbsp;&nbsp; −λ log Z → min<sub>U</sub> J(U) .
+</div>
+<p>这是 Laplace 方法。算法层面的含义：λ 很小时 softmax 接近 one-hot，只有最优附近的少数样本有权重，<strong>ESS 崩到 1–2</strong>（回看 <a href="#d2">D2</a>）。你等于在用 argmin 做决策，但付出了采样 N 个样本的代价。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>λ→∞：退化成先验。</strong><span class="m">e<sup>−J/λ</sup> → 1</span>，于是 <span class="m">p<sup>*</sup> → ρ</span>。若 ρ 是均匀分布，就是纯随机采样，完全没有优化；ESS = N。你花的算力全部浪费在"均匀探索"上。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>可操作的判据。</strong>λ 应该与"样本间代价的典型差距"同量级。定义这一轮的代价标准差 <span class="m">s<sub>J</sub> = std<sub>i</sub>(J<sub>i</sub>)</span>，一个稳健的初值是</p>
+<div class="eq small">
+λ ≈ s<sub>J</sub> / c , &nbsp;&nbsp; c ∈ [1, 5] ,
+</div>
+<p>并在线检查 <span class="m">ESS/N</span>：太大就减小 λ 或增大 Σ，太小就反向调。注意这个判据<em>每轮都可能变</em>（代价尺度随任务阶段变化），所以固定 λ 的实现在长时任务上经常时好时坏。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>一个必须记住的耦合。</strong>在二次代价 + 高斯提议下，更新只依赖比值 <span class="m">Σ/λ</span>（<a href="#d9">D9</a> 严格证明）。这意味着"把噪声调大"和"把温度调低"在<em>均值轨迹</em>上是同一个旋钮。但它们<strong>不等价</strong>：Σ 还决定采样体积和 <span class="m">χ<sup>2</sup></span>，从而决定 ESS。所以实践中不能只调一个，必须看 ESS 一起调。</p>
+</div>
+
+<div class="box key">
+<div class="h">T1 的结论浓缩成一行</div>
+<p>你优化的从来不是 <span class="m">min J</span>，而是 <span class="m">min<sub>q∈Π</sub> E<sub>q</sub>[J] + λD<sub>KL</sub>(q‖ρ)</span>。λ 是这个问题的"软化程度"，Π 是你的表达能力，ρ 是你的先验。三者共同决定你实际解出什么。任何只谈 J 的"最优性"讨论都是不完整的。</p>
+</div>
+</div>
+</details>
+<h2 id="t2"><span class="num">T2 · 更新引擎</span>主式落到地面：四个具体实例</h2>
+
+<p>现在到了整个知识树最该亲手推一遍的地方。主式里的"投影"是一个抽象的 argmin，这一层把它解出来。解出来之后你会发现：MPPI、CEM、Biased-MPPI、SVG-MPPI、Tsallis 之间<strong>真正的差别只有两个</strong>——用哪个散度、族 Π 有多大。</p>
+
+<h3><span class="num">2.1</span>投影到高斯族：矩匹配（D5）</h3>
+
+<details class="deriv" id="d5">
+<summary><span class="did">D5</span>前向 KL 在高斯族上的精确解就是矩匹配<span class="why">引擎核心 · MPPI 与 CEM 的共同祖先</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>解出 <span class="m">min<sub>μ,Σ</sub> D<sub>KL</sub>( p<sup>*</sup> ‖ N(μ,Σ) )</span>，证明最优解是 <span class="m">μ = E<sub>p<sup>*</sup></sub>[U]</span>、<span class="m">Σ = Cov<sub>p<sup>*</sup></sub>[U]</span>。</div>
+
+<div class="step"><span class="sn">1</span>
+<p>把 KL 里对 q 无关的项丢掉。设 <span class="m">q = N(μ,Σ)</span>：</p>
+<div class="eq small">
+D<sub>KL</sub>(p<sup>*</sup>‖q) = E<sub>p<sup>*</sup></sub>[ log p<sup>*</sup> ] − E<sub>p<sup>*</sup></sub>[ log N(U;μ,Σ) ] .
+</div>
+<p>第一项与 μ,Σ 无关。所以最小化等价于<strong>最大化</strong> <span class="m">E<sub>p<sup>*</sup></sub>[log N(U;μ,Σ)]</span>——即加权最大似然。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p>代入高斯对数密度 <span class="m">log N = −½(U−μ)<sup>⊤</sup>Σ<sup>−1</sup>(U−μ) − ½log|Σ| + const</span>，对 μ 求导并令零：</p>
+<div class="eq small">
+0 = Σ<sup>−1</sup> E<sub>p<sup>*</sup></sub>[ U − μ ] ⇒ μ<sup>*</sup> = E<sub>p<sup>*</sup></sub>[U] .
+</div>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p>对 <span class="m">P = Σ<sup>−1</sup></span> 求导：<span class="m">∇<sub>P</sub> log|P| = P<sup>−1</sup> = Σ</span>，二次型给 <span class="m">−½(U−μ)(U−μ)<sup>⊤</sup></span>，于是</p>
+<div class="eq small">
+0 = ½ Σ − ½ E<sub>p<sup>*</sup></sub>[ (U−μ)(U−μ)<sup>⊤</sup> ] ⇒ Σ<sup>*</sup> = Cov<sub>p<sup>*</sup></sub>[U] .
+</div>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>这就是全部。</strong>前向 KL 到高斯族 = 匹配一二阶矩。没有别的。CEM 之所以去算精英样本的 <span class="m">mean/var</span>，不是因为它是个"合理的启发式"，而是因为它是前向 KL 在样本近似下的精确解。</p>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>样本版本。</strong>只有样本时，用自归一化权重 <span class="m">ŵ<sub>i</sub></span> 近似 <span class="m">p<sup>*</sup></span>：</p>
+<div class="eq small">
+μ̂ = ∑<sub>i</sub> ŵ<sub>i</sub>U<sub>i</sub> , &nbsp;&nbsp;
+Σ̂ = ∑<sub>i</sub> ŵ<sub>i</sub>(U<sub>i</sub>−μ̂)(U<sub>i</sub>−μ̂)<sup>⊤</sup> .
+</div>
+<p>如果样本不张满维度，<span class="m">Σ̂</span> 会奇异。实践中的两种做法：<em>固定 Σ</em>（MPPI）或<em>加正则/收缩</em>（CEM 的 <span class="m">Σ+εI</span>）。这个选择直接引出下面两种方法的根本分歧。</p>
+</div>
+
+<div class="box insight">
+<div class="h">一个常被忽略的推论</div>
+<p>D5 说明：只要用<strong>前向 KL + 高斯族</strong>，更新就必然是"加权矩匹配"。如果你的方法既不是加权均值也不是加权协方差，那它一定用了别的散度（反向 KL、Tsallis、OT）或别的族（混合、粒子）。这条判据能让你在读新论文时一秒钟定位它在干什么。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">2.2</span>MPPI：固定协方差，只动均值（D6）</h3>
+
+<details class="deriv" id="d6">
+<summary><span class="did">D6</span>MPPI 更新式 = 平滑目标上的一次梯度步<span class="why">最重要的单个推导 · 同时解释"无导数"与"退火"</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>从"前向 KL + 固定 Σ"出发，推出 <span class="m">ū<sup>+</sup> = ū + ∑<sub>i</sub> w<sub>i</sub>W<sub>i</sub></span>，并证明它等于 <span class="m">ū + Σ∇<sub>ū</sub> log g(ū)</span>，其中 <span class="m">g = p<sup>*</sup> ∗ N(0,Σ)</span> 是平滑后的目标。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>设定。</strong>族限制为"均值可变、协方差固定"的高斯：<span class="m">q<sub>m</sub> = N(ū<sub>m</sub>, Σ)</span>。用 <span class="m">q<sub>m</sub></span> 采样：<span class="m">U<sub>i</sub> = ū<sub>m</sub> + W<sub>i</sub></span>，<span class="m">W<sub>i</sub> ~ N(0,Σ)</span>，然后 rollout 得 <span class="m">J<sub>i</sub> = J(U<sub>i</sub>)</span>。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>权重。</strong>按主式，<span class="m">w<sub>i</sub> ∝ ρ(U<sub>i</sub>)e<sup>−J<sub>i</sub>/λ</sup>/q<sub>m</sub>(U<sub>i</sub>)</span>。在取 <span class="m">ρ = q<sub>m</sub></span>（用当前提议当先验，MPPI 的默认做法）时，权重简化成</p>
+<div class="eq small">
+w<sub>i</sub> = e<sup>−J<sub>i</sub>/λ</sup> / ∑<sub>j</sub> e<sup>−J<sub>j</sub>/λ</sup> .
+</div>
+<div class="box warn" style="margin:10px 0">
+<div class="h">这一步最容易搞错</div>
+<p>如果你额外引入了一个与 <span class="m">q<sub>m</sub></span> 不同的基准 <span class="m">ρ₀ = N(ū<sub>0</sub>, Σ)</span>（比如上一轮的名义解，或一个外部控制器给出的参考），那么权重里会多出一项对数密度比。高斯情况下它是<strong>线性</strong>的（<a href="#d12">D12</a> 给完整形式），会造成一个额外的控制代价项。很多实现里"MPPI 有神秘偏差"，源头就在这里：把 <span class="m">ρ</span> 写成了别的分布却用简化权重。</p>
+</div>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>矩匹配。</strong>由 D5，<span class="m">μ<sup>new</sup> = ∑<sub>i</sub> w<sub>i</sub>U<sub>i</sub></span>。把它改写成"相对当前中心的增量"：</p>
+<div class="eq small">
+ū<sup>+</sup> − ū = ∑<sub>i</sub> w<sub>i</sub> (U<sub>i</sub> − ū) = ∑<sub>i</sub> w<sub>i</sub> W<sub>i</sub> .
+</div>
+<p>这就是 MPPI 更新式。到这里，它还是"矩匹配"的一个特例，看不出梯度。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>关键等价。</strong>定义平滑目标</p>
+<div class="eq small">
+g(μ) = ∫ p̃<sup>*</sup>(U) N(U; μ, Σ) dU = E<sub>W ∼ N(0,Σ)</sub>[ p̃<sup>*</sup>(μ+W) ] ,
+&nbsp;&nbsp; p̃<sup>*</sup>(U) := e<sup>−J(U)/λ</sup> .
+</div>
+<p>（<span class="m">g</span> 就是 <span class="m">p̃<sup>*</sup></span> 与高斯核的卷积，也等于 <span class="m">p̃<sup>*</sup></span> 在"加噪观测模型 <span class="m">y = U + ε</span>"下的边缘密度。）<strong>记号提醒：</strong>这里的 <span class="m">p̃<sup>*</sup></span> 是<em>固定</em>的代价诱导密度；第 2 步取 <span class="m">ρ = q<sub>m</sub></span> 只是让权重化简为 <span class="m">e<sup>−J/λ</sup></span>，而 <span class="m">q<sub>m</sub>(U)e<sup>−J(U)/λ</sup> = N(U;ū,Σ)e<sup>−J/λ</sup></span> 恰好就是 <span class="m">p̃<sup>*</sup></span> 在当前中心处的核倾斜分布，两种读法给出同一个加权均值。对它取对数梯度，交换积分与求导：</p>
+<div class="eq small">
+∇<sub>μ</sub> log g(μ) = (1/g) ∫ p<sup>*</sup>(U) ∇<sub>μ</sub>N(U;μ,Σ) dU .
+</div>
+<p>用 <span class="m">∇<sub>μ</sub>N(U;μ,Σ) = Σ<sup>−1</sup>(U−μ)N(U;μ,Σ)</span> 代入，得</p>
+<div class="eq small">
+∇<sub>μ</sub> log g(μ) = Σ<sup>−1</sup> ( E<sub>U~p<sup>*</sup>(·)N(·;μ,Σ)/g</sub>[U] − μ ) .
+</div>
+<p>括号里那个期望，按定义就是"在给定中心 μ、用核 N(0,Σ) 采样后按 <span class="m">p<sup>*</sup></span> 重加权的均值"——正是 <span class="m">∑<sub>i</sub>w<sub>i</sub>U<sub>i</sub></span> 的总体版本。于是</p>
+<div class="eq">
+ū<sup>+</sup> = ū + Σ ∇<sub>ū</sub> log g(ū)
+<span class="lbl">MPPI 更新 = 在平滑目标上的预条件梯度上升，预条件矩阵就是采样协方差 Σ</span>
+</div>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>三种读法，都对。</strong></p>
+<table class="tight" style="margin:10px 0 0">
+<tr><th style="width:24%">视角</th><th>同一个式子的含义</th></tr>
+<tr><td>变分</td><td>前向 KL 投影到"固定 Σ 的高斯族"，解是矩匹配</td></tr>
+<tr><td>优化</td><td>对平滑目标 <span class="m">log g</span> 做一次自然梯度步；<span class="m">Σ</span> 是预条件</td></tr>
+<tr><td>随机搜索</td><td>零阶梯度估计：只用了 <span class="m">J</span> 的值，却在估计 <span class="m">∇log g</span></td></tr>
+</table>
+<p>第三种读法解决了初学者最常问的那个问题：<em>仿真器不可导，为什么还能"沿梯度方向"走？</em>答案是——它从来没有对 <span class="m">J</span> 求导。它对 <strong>平滑后的</strong> <span class="m">log g</span> 求导，而那个导数恰好可以写成"样本偏差的加权平均"，只需要代价的<em>值</em>。</p>
+</div>
+
+<div class="box insight">
+<div class="h">由此一次性解释三件事</div>
+<p><strong>① 为什么 Σ 决定搜索半径：</strong><span class="m">Σ</span> 同时是采样核和预条件，核越宽平滑越强、单步跨度越大。<br>
+<strong>② 为什么"缩小方差"有时有用、有时有害：</strong>Σ→0 时 <span class="m">g → p<sup>*</sup></span>，你在优化真实目标，但梯度估计的方差按 <span class="m">Σ<sup>−1</sup></span> 放大。<br>
+<strong>③ 为什么退火有效：</strong>先用大 Σ 在平滑地形上走到正确的盆地，再缩小 Σ 精修（T3）。<em>不是</em>因为"退火总能找到全局最优"——它只是把"盆地选择"和"局部精修"两个子问题分开处理。</p>
+</div>
+
+<div class="box plain">
+<div class="h">对照实现（MPPI 的三种常见写法）</div>
+<p>① <b>噪声式</b>：<span class="m">ū<sup>+</sup> = ū + ∑w<sub>i</sub>W<sub>i</sub></span>　② <b>样本式</b>：<span class="m">ū<sup>+</sup> = ∑w<sub>i</sub>U<sub>i</sub></span>　③ <b>含基准漂移式</b>：<span class="m">ū<sup>+</sup> = ∑w<sub>i</sub>U<sub>i</sub> + Σ·(基准偏移项)</span>。三者在 <span class="m">ρ=q<sub>m</sub></span> 时等价；一旦 <span class="m">ρ ≠ q<sub>m</sub></span>，只有 ③ 是对的。读到论文里"我们加了控制代价项"时，九成是在补这个差分。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">2.3</span>CEM：让协方差也动</h3>
+
+<p>CEM 是把 D5 里的 Σ̂ 真的用起来。它不预先指定协方差，而是每轮从精英样本估计：</p>
+
+<div class="eq">
+<span style="font-style:normal">精英集</span> ℰ = { i : J<sub>i</sub> ≤ J<sub>(⌈ρN⌉)</sub> } ,
+&nbsp;&nbsp; ū<sup>+</sup> = mean(ℰ) , &nbsp; Σ<sup>+</sup> = cov(ℰ) + εI .
+<span class="lbl">ρ 是精英比例（典型 0.05–0.2）</span>
+</div>
+
+<p>把它放到主式的框架里看，CEM 就是把<strong>光滑的指数权重换成了硬 0-1 截断</strong>：</p>
+
+<div class="eq small">
+w<sub>i</sub><sup>CEM</sup> = <span style="font-style:normal">1</span>[ J<sub>i</sub> ≤ 阈值 ] ,
+&nbsp;&nbsp;<span style="font-style:normal">对比</span>&nbsp;&nbsp;
+w<sub>i</sub><sup>MPPI</sup> ∝ exp(−J<sub>i</sub>/λ) .
+</div>
+
+<div class="grid2">
+<div class="box plain">
+<div class="h">CEM 的特点</div>
+<p>协方差自适应 ⇒ 自动从"宽搜索"过渡到"窄精修"，不需要手工调度；但样本少时 <span class="m">Σ̂</span> 噪声大、容易塌陷。精英比例 ρ 是它的温度旋钮。</p>
+</div>
+<div class="box plain">
+<div class="h">MPPI 的特点</div>
+<p>协方差固定 ⇒ 行为可预测，但搜索尺度全靠人调 Σ 和 λ；好处是权重光滑，梯度估计方差可控（这正是 D6 的预条件结构）。</p>
+</div>
+</div>
+
+<div class="box key">
+<div class="h">两者其实是同一个极限关系</div>
+<p>把 D8 的 Sinkhorn 传输写成 <span class="m">Π ∝ exp(−C/ε)</span>，令 <span class="m">ε→0</span> 就退化成"硬分配"，也就是 CEM 的精英截断。反过来，<span class="m">ε</span> 有限时就是 soft-CEM / OT 版。所以 <strong>MPPI 与 CEM 不是对手，是温度的两端</strong>：MPPI 软、CEM 硬，中间是一整个连续谱。看论文时判断它在谱上的位置，就看它的权重函数是光滑的还是截断的。</p>
+</div>
+
+<h3><span class="num">2.4</span>其他权重：Tsallis、风险、导引</h3>
+
+<p>权重函数是主式里最便宜的可改项——不改族、不改散度，只改"代价如何变成质量"。三种常见改动：</p>
+
+<table>
+<tr><th style="width:18%">权重形式</th><th style="width:26%">公式</th><th style="width:24%">改的是什么</th><th>代价</th></tr>
+<tr>
+  <td><b>Tsallis / q-指数</b><br><span class="pill opt">L32</span></td>
+  <td class="m">w ∝ [1 − (r−1)J/λ̃]<sub>+</sub><sup>1/(r−1)</sup></td>
+  <td>重尾：小 <span class="m">r</span> 时高代价样本仍有非零权重</td>
+  <td>r→1 回到 Gibbs；r&lt;1 增加探索但减慢收敛</td>
+</tr>
+<tr>
+  <td><b>CVaR / 尾部</b></td>
+  <td class="m">w ∝ 1[ J ≤ VaR<sub>α</sub>(J) ] 并重归一</td>
+  <td>只看最坏 α 分位 ⇒ 风险敏感</td>
+  <td>等价于对尾部做精英截断；α 是风险厌恶度</td>
+</tr>
+<tr>
+  <td><b>导引 / 偏置</b><br><span class="pill opt">N03</span></td>
+  <td class="m">q<sub>m</sub> = 混合(名义, 辅助控制器)</td>
+  <td>改的是<b>提议</b>而不是权重</td>
+  <td>需要重要性修正项，否则有偏（见 D12）</td>
+</tr>
+</table>
+
+<div class="box warn">
+<div class="h">"改权重"与"改提议"必须分清</div>
+<p>Tsallis 和 CVaR 改的是<strong>目标分布本身</strong>（你在解一个不同的问题）；Biased-MPPI 之类改的是<strong>提议分布</strong>（问题不变，只是换了个更好的采样器）。前者要重新论证"这个新目标是否还是你想要的"，后者只需保证重要性权重正确。混淆这两者，会导致无法判断一篇论文的"改进"到底改了什么。</p>
+</div>
+
+<h2 id="t3"><span class="num">T3 · 搜索地形</span>为什么同一算法有时神有时废</h2>
+
+<p>这一层是采样 MPC 最有洞察力、也最少被系统讲清楚的部分。核心问题是：<strong>MPPI 在"哪个函数"上做梯度上升？</strong>D6 已经给出答案——<span class="m">log g</span>，即平滑后的目标。那么"平滑"这个动作到底改变了什么，就是全部关键。</p>
+
+<h3><span class="num">3.1</span>平滑、得分与"看不见的梯度"</h3>
+
+<p>把 D6 的结论放在中心位置：</p>
+
+<div class="eq">
+∇<sub>y</sub> log p<sub>Σ</sub>(y) = Σ<sup>−1</sup>( E<sub>p<sup>*</sup>(·|y)</sub>[U] − y ) ,
+&nbsp;&nbsp; p<sub>Σ</sub> = p<sup>*</sup> ∗ N(0,Σ) .
+<span class="lbl">平滑密度 p<sub>Σ</sub> 的得分 = "后验均值减去当前点"，再乘预条件</span>
+</div>
+
+<p>这个式子的三个直接推论，构成了整个 T3 的骨架：</p>
+
+<table class="tight">
+<tr><th style="width:30%">推论</th><th>含义</th></tr>
+<tr><td><b>Σ 越大，地形越平滑</b></td><td><span class="m">p<sub>Σ</sub></span> 的峰更少、更宽。多峰 <span class="m">p<sup>*</sup></span> 在大 <span class="m">Σ</span> 下可能合并成一个峰 ⇒ 大核能"跨过"局部极小。</td></tr>
+<tr><td><b>Σ 越大，峰的位置越偏</b></td><td>平滑会把峰往质量大的方向拉。尖锐不对称的峰（接触、碰撞）在大核下会明显偏移 ⇒ 大核找到的解<em>不是</em>原目标的解。</td></tr>
+<tr><td><b>Σ→0，回到真实地形</b></td><td>此时 <span class="m">g→p<sup>*</sup></span>，但得分中的 <span class="m">Σ<sup>−1</sup></span> 爆炸 ⇒ 方差失控。这是 <a href="#d9">D9</a> 的定量版本。</td></tr>
+</table>
+
+<div class="box insight">
+<div class="h">"覆盖 vs 精修"不是玄学，是同一个式子里的两项</div>
+<p>大核：平整地形（好盆地选择）+ 峰值偏移（解不准）。小核：地形崎岖（易困局部）+ 位置准确。任何固定的 Σ 都只能取一个折中。<strong>退火 = 让 Σ 随时间从大到小，依次拿到两者的好处。</strong>DIAL-MPC 的全部理论创新，就是把这件事从"工程技巧"提升为"有明确数学刻画的过程"。</p>
+</div>
+
+<h3><span class="num">3.2</span>退火的两种尺度（DIAL-MPC 的核心）</h3>
+
+<details class="deriv" id="d7">
+<summary><span class="did">D7</span>退火为什么能同时得到覆盖与精修<span class="why">DIAL · 噪声日程的数学来源</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>把"大核覆盖、小核精修"写成一列平滑密度 <span class="m">p<sub>n</sub></span>，并说明它与扩散模型的关系。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>定义一列平滑密度。</strong>设原始目标 <span class="m">p<sub>0</sub> ∝ ρe<sup>−J/λ</sup></span>。定义</p>
+<div class="eq small">
+p<sub>n</sub> = p<sub>0</sub> ∗ N(0, Σ<sub>n</sub>) ,
+&nbsp;&nbsp; Σ<sub>M</sub> ≻ Σ<sub>M−1</sub> ≻ … ≻ Σ<sub>1</sub> ≻ 0 .
+</div>
+<p>每层用对应的核采样、按 D6 更新中心，得到中心序列 <span class="m">ū<sub>M</sub> → ū<sub>M−1</sub> → … → ū<sub>1</sub></span>。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>每层做什么。</strong>第 n 层执行 <span class="m">ū<sub>n</sub><sup>+</sup> = ū<sub>n</sub> + Σ<sub>n</sub>∇log p<sub>n</sub>(ū<sub>n</sub>)</span>。因为 <span class="m">p<sub>n</sub></span> 比 <span class="m">p<sub>0</sub></span> 平滑，这个梯度步跨得远、不容易被尖峰卡住；又因为 <span class="m">Σ<sub>n</sub></span> 逐层变小，步长逐层收敛。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>与扩散的关系。</strong>取前向加噪过程 <span class="m">z<sub>n</sub> = ᾱ<sub>n</sub>z<sub>0</sub> + √(1−ᾱ<sub>n</sub>)ε</span>，则边缘 <span class="m">p<sub>n</sub></span> 恰好是 <span class="m">p<sub>0</sub></span> 与高斯的卷积（<a href="#d8">D8</a>）。所以"退火"就是"反向扩散"：从最平滑的边缘开始，逐层去噪回到 <span class="m">p<sub>0</sub></span>。DIAL-MPC 的理论主张正是"采样 MPC ≈ 单步去噪的序列"，而每一步都只是 D6 的加权均值。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>两种退火尺度要分开。</strong>DIAL 用了两个独立因子：</p>
+<div class="eq small">
+轨迹级（层间）：det Σ(n) ∝ exp[ −(M−n)β<sub>1</sub>d / M ] ,
+&nbsp;&nbsp; 动作级（时域内）：det Σ<sub>h</sub>(n) ∝ exp[ −(H−1−h)β<sub>2</sub>d<sub>u</sub> / (H−1) ] .
+</div>
+<p>前者让整段轨迹随层数收敛；后者让<em>远端</em>动作获得更大扰动、<em>近端</em>动作获得更小扰动。直觉：近端动作马上要执行，必须精确；远端动作还有多轮重规划机会，可以粗一些。这个设计在长时域、高频率执行的任务上收益明显。</p>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>一句诚实的边界。</strong>退火<em>不保证</em>找到全局最优。它保证的是"每层都在解一个更平滑的问题"，而在某些任务族（<a href="#d7-lim">见 D7 的局限</a>）里，平滑确实能把多峰合并成单峰，从而把盆地选择变成确定的。这需要 <span class="m">p<sub>0</sub></span> 的峰间距小于核宽——这是一个<em>可以用数据检查</em>的条件，而不是"退火总是有用"的信仰。</p>
+</div>
+
+<div class="box warn" id="d7-lim">
+<div class="h">退火不解决的事</div>
+<p>如果目标有<em>两个相距很远、代价几乎相同</em>的模式（比如左右两种抓取），且核宽远小于间距，那么退火只会收敛到"初始中心所在的那个盆地"。此时无论怎么调 β，都会漏掉另一半。这种情况需要 T4 的机制（多起点、粒子排斥、传输），退火无能为力。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">3.3</span>扩散视角：得分从哪来（D8）</h3>
+
+<details class="deriv" id="d8">
+<summary><span class="did">D8</span>去噪后验与得分估计<span class="why">连接 D-MPC / DIAL / MBD / Diffuser</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>从"加噪观测"模型出发，导出 <span class="m">∇<sub>y</sub>log p<sub>n</sub>(y)</span> 的可用估计，说明它为何能只用 <span class="m">J</span> 的值算出。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>加噪模型。</strong>设 <span class="m">y = z<sub>0</sub> + σ ε</span>，<span class="m">ε~N(0,I)</span>，<span class="m">z<sub>0</sub> ~ p<sub>0</sub></span>。则 <span class="m">p<sub>σ</sub>(y) = ∫ p<sub>0</sub>(z)N(y;z,σ<sup>2</sup>I) dz</span>。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>后验。</strong>对 <span class="m">z<sub>0</sub></span> 配平方：<span class="m">p(z<sub>0</sub>|y) ∝ p<sub>0</sub>(z<sub>0</sub>)exp(−‖y−z<sub>0</sub>‖<sup>2</sup>/2σ<sup>2</sup>)</span>，于是</p>
+<div class="eq small">
+p(z<sub>0</sub>|y) = p<sub>0</sub>(z<sub>0</sub>) e<sup>−J(z<sub>0</sub>)/λ</sup> e<sup>−‖y−z<sub>0</sub>‖<sup>2</sup>/2σ<sup>2</sup></sup> / Z(y) .
+</div>
+<p>这就是"向低代价倾斜 + 向观测点靠拢"的联合后验。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>得分（Tweedie 公式）。</strong>对 <span class="m">y</span> 求导：</p>
+<div class="eq small">
+∇<sub>y</sub> log p<sub>σ</sub>(y) = (1/σ<sup>2</sup>)( E[z<sub>0</sub>|y] − y ) = −(1/σ) E[ε|y] .
+</div>
+<p>两个等价写法：<strong>一个是"后验均值减当前点"，另一个是"预测噪声的期望"</strong>。它们分别对应两种实现：<em>rollout 采样估计后验均值</em>（DIAL/MBD 路线），或<em>训练网络预测噪声</em>（D-MPC/Diffuser 路线）。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>与实际算法的对应。</strong>把 D6 的 <span class="m">Σ</span> 写成 <span class="m">σ<sup>2</sup>I</span>，立刻得到 <span class="m">ū<sup>+</sup> = ū + σ<sup>2</sup>∇log p<sub>σ</sub>(ū) = E[z<sub>0</sub>|ū]</span>。<strong>MPPI 的更新就是"在当前噪声层上算一次后验均值"。</strong>MBD 里的 <span class="m">μ<sub>n</sub>(y) = E<sub>q<sub>n</sub></sub>[z<sub>0</sub>p<sub>0</sub>(z<sub>0</sub>)]/E<sub>q<sub>n</sub></sub>[p<sub>0</sub>(z<sub>0</sub>)]</span> 正是这一项的 MC 估计。</p>
+</div>
+
+<div class="box insight">
+<div class="h">这一节的最大收获</div>
+<p>D-MPC、DIAL-MPC、MBD、Diffuser 看起来是四个不同领域的方法，在数学上是<strong>同一个式子的两种实现</strong>：要么用 <em>rollout + 代价</em> 现场估 <span class="m">E[z<sub>0</sub>|y]</span>（无模型/在线），要么用<em>训练好的去噪网络</em>预测它（有数据/离线）。前者的天花板是样本数与仿真成本，后者的天花板是训练分布覆盖。这条判据决定了你在 G1 这种场景该选哪条路。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">3.4</span>收缩率：缩小方差的悖论（D9）</h3>
+
+<details class="deriv" id="d9">
+<summary><span class="did">D9</span>二次代价下的精确收敛率 <span class="m">(I+ΣA/λ)<sup>−1</sup></span><span class="why">调参直觉的定量来源</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>在最简单的可解情形里，算出"每轮迭代把误差缩小多少"，并用它解释退火与 λ 的作用。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>设定。</strong>二次代价 <span class="m">J(U) = ½(U−U<sup>*</sup>)<sup>⊤</sup>A(U−U<sup>*</sup>) + c</span>，<span class="m">A ≻ 0</span>。则 <span class="m">p<sup>*</sup> = N(U<sup>*</sup>, λA<sup>−1</sup>)</span>（验证：指数是 <span class="m">−J/λ = −(U−U<sup>*</sup>)<sup>⊤</sup>A(U−U<sup>*</sup>)/(2λ)</span>，正是高斯指数）。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>平滑目标。</strong><span class="m">p<sub>Σ</sub> = p<sup>*</sup> ∗ N(0,Σ) = N(U<sup>*</sup>, λA<sup>−1</sup>+Σ)</span>（高斯卷积，协方差相加）。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>更新。</strong>由 D6，<span class="m">ū<sup>+</sup> = ū + ΣΣ̃<sup>−1</sup>(U<sup>*</sup>−ū)</span>，其中 <span class="m">Σ̃ = λA<sup>−1</sup>+Σ</span>。整理：</p>
+<div class="eq">
+ū<sup>+</sup> − U<sup>*</sup> = ( I + ΣA/λ )<sup>−1</sup> ( ū − U<sup>*</sup> )
+<span class="lbl">每轮误差乘一个固定矩阵；收敛率由 (I+ΣA/λ) 的特征值决定</span>
+</div>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>读出四件事。</strong></p>
+<table class="tight" style="margin:10px 0 0">
+<tr><th style="width:32%">情形</th><th>行为</th></tr>
+<tr><td><span class="m">ΣA/λ ≫ I</span>（宽核/低温）</td><td>收缩因子 ≈ 0，一步到位——但这是"过度自信"，因为实际上你只在一轮里就跳到了 <span class="m">U<sup>*</sup></span>，代价是对 <span class="m">A</span> 的估计误差完全没被平均掉</td></tr>
+<tr><td><span class="m">ΣA/λ ≪ I</span>（窄核/高温）</td><td>收缩因子 ≈ I，几乎不动——需要很多轮，但每轮稳定</td></tr>
+<tr><td>各向异性 <span class="m">A</span></td><td>不同方向的收敛率差 <span class="m">Σ<sub>i</sub>a<sub>i</sub>/λ</span>。窄方向慢、宽方向快 ⇒ <b>误差在尖锐方向残留</b></td></tr>
+<tr><td>只有 <span class="m">Σ/λ</span> 出现</td><td>增大噪声 ≡ 降低温度（就均值轨迹而言）。但两者的 ESS 行为不同（<a href="#d4">D4</a>）</td></tr>
+</table>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>为什么这把"缩小方差"变成悖论。</strong>理论上缩小 Σ 会让 <span class="m">g→p<sup>*</sup></span>，目标更准；但收缩因子 <span class="m">(1+sa/λ)<sup>−1</sup></span> 同时趋近 1，每轮几乎不动。所以"调小 Σ 以更精确"在<em>有限轮数</em>下会让收敛变慢。正确做法是<strong>先大后小</strong>（退火），让"快速到达"和"精确停止"发生在不同阶段。这就是 D7 的定量地基。</p>
+</div>
+
+<div class="box key">
+<div class="h">把 D9 当作调参的仪表</div>
+<p>给定你的代价曲率量级 <span class="m">a</span>、采样步长 <span class="m">s</span>、温度 <span class="m">λ</span>，单轮收缩率约 <span class="m">1/(1+sa/λ)</span>。想让 <span class="m">M</span> 轮内收敛到 <span class="m">10<sup>−3</sup></span>，就需要 <span class="m">(1+sa/λ)<sup>−M</sup> ≲ 10<sup>−3</sup></span>。这比"试几组超参"可靠得多，而且能解释为什么同一个 λ 在不同任务上表现差异巨大——<span class="m">a</span> 变了。</p>
+</div>
+</div>
+</details>
+
+<div class="box plain">
+<div class="h">T3 小结：一张决策表</div>
+<p><b>固定 Σ 且 ESS 正常</b>：直接用 MPPI。<b>固定 Σ 但 ESS 塌陷</b>：减小 λ 或增大 Σ，或换退火。<b>地形多峰、初始点不确定</b>：用退火（DIAL 式）。<b>多峰且间距远</b>：退火无效，去 T4。<b>代价尺度随任务阶段剧变</b>：λ 需自适应，否则同一组参数在不同阶段失效。</p>
+</div>
+<h2 id="t4"><span class="num">T4 · 多模态</span>均值陷阱与六种出路</h2>
+
+<p>这一层存在的理由，可以一句话说完：<strong>前向 KL 是求平均的，而平均会毁掉模式</strong>。T2 的 D5 已经证明 MPPI 的更新是矩匹配——目标有两个峰时，单高斯的矩匹配解是"两峰之间的一个宽高斯"。它的均值落在谷底，而谷底是<em>高代价</em>的。这不是数值误差，是那个数学问题的正确解。</p>
+
+<h3><span class="num">4.1</span>陷阱的精确算例（D10）</h3>
+
+<details class="deriv" id="d10">
+<summary><span class="did">D10</span>双峰目标下，前向 KL 的最优解精确落在谷底<span class="why">精确可算 · 说明陷阱是<em>固定点</em>而非暂态</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>用一个完全可解析的例子，算出陷阱的位置、宽度，并证明它是 MPPI 迭代的<em>不动点</em>——也就是说，迭代不会自己逃出来。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>设定一个双峰目标。</strong>令</p>
+<div class="eq small">
+p<sup>*</sup>(U) = ½ N(−a, s<sup>2</sup>) + ½ N(+a, s<sup>2</sup>) , &nbsp;&nbsp; a &gt; 0 , s &gt; 0 .
+</div>
+<p>它对应某个双井代价（两条低代价路线，比如从箱子左边或右边接近）。真实最优解是 <span class="m">U = ±a</span>，代价相同。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>前向 KL 到单高斯（D5）。</strong>矩匹配给出</p>
+<div class="eq small">
+μ<sup>*</sup> = E<sub>p<sup>*</sup></sub>[U] = ½(−a) + ½(+a) = 0 ,
+&nbsp;&nbsp; σ<sup>2*</sup> = E[U<sup>2</sup>] − 0 = a<sup>2</sup> + s<sup>2</sup> .
+</div>
+<p>解是 <span class="m">N(0, a<sup>2</sup>+s<sup>2</sup>)</span>：中心在<strong>正中间</strong>，方差比任一模态都大得多。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>为什么它是迭代的不动点。</strong>从中心 <span class="m">ū = 0</span> 采样，<span class="m">W<sub>i</sub> ~ N(0,Σ)</span>。因为目标和采样核都关于 0 对称，代价 <span class="m">J</span> 也对称，所以权重满足 <span class="m">w(W) = w(−W)</span>。于是</p>
+<div class="eq small">
+ū<sup>+</sup> = 0 + ∑<sub>i</sub> w<sub>i</sub>W<sub>i</sub> ≈ 0 .
+</div>
+<p><strong>更新把中心留在了原地。</strong>再迭代一万次也还是 0。这就是"陷阱"二字的准确含义：它是一个稳定不动点，不是一步走错。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>扰动分析。</strong>把一轮更新写成映射 <span class="m">ū<sup>+</sup> = F(ū)</span>。由于目标和采样核都关于 0 对称，<span class="m">F</span> 是奇函数且 <span class="m">F(0) = 0</span>。在 0 附近的线性化给出 <span class="m">F(δ) ≈ κδ</span>，其增益 <span class="m">κ = F′(0)</span> 完全由两侧权重的差决定：</p>
+<div class="eq small">
+κ = <span style="font-style:normal">E</span><sub>W</sub>[ W · w′(W) ] / <span style="font-style:normal">E</span><sub>W</sub>[ w(W) ] ,
+&nbsp;&nbsp; w(W) = e<sup>−J(ū+W)/λ</sup> ,
+</div>
+<p>在对称双井下 <span class="m">|κ| ≤ 1</span>（这是"先取对数再归一化"的必然结果：加权均值不会把中心推过任一模态的中心）。于是 <strong>0 是吸引不动点</strong>——偏差只会被缩小，不会被放大。只有初始偏差大到足以让一侧样本在数量上压倒另一侧（即线性化失效）时才会逃出，这解释了"有时能跑、有时卡死"：<em>取决于初始化，而不是迭代次数</em>。</p>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>若用 CEM（协方差也更新）会怎样。</strong>精英样本来自两侧，经验方差继续膨胀，下一步采样更宽，两侧仍然均衡——<strong>同样不动</strong>。所以"换成 CEM"不是解法。</p>
+</div>
+
+<div class="box warn">
+<div class="h">这个例子的三条教训</div>
+<p><strong>①</strong> 陷阱是前向 KL 的<em>正确解</em>，改实现没用，必须改散度或改族。<strong>②</strong> 对称性让它是稳定不动点，所以"多迭代几轮"无效。<strong>③</strong> 它可以通过初始位置、噪声尺度、或显式多起点来绕过——这三条对应下面六种出路的本质。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">4.2</span>六种出路的统一对照</h3>
+
+<p>先把全景摆出来，再挑两个值得手推的（OT 与 Stein）细讲。</p>
+
+<table>
+<tr><th style="width:14%">出路</th><th style="width:22%">改主式里的哪一项</th><th style="width:30%">机制</th><th>代价 / 局限</th></tr>
+<tr>
+  <td><b>选优</b><br><span class="pill must">N02</span><span class="pill opt">L06</span></td>
+  <td>投影 → argmax</td>
+  <td>不平均，直接取 <span class="m">argmin<sub>i</sub>J<sub>i</sub></span>（或取样本本身而非均值）</td>
+  <td>完全依赖样本命中；需要大 N 或好先验；D-MPC 用它</td>
+</tr>
+<tr>
+  <td><b>聚类</b><br><span class="pill opt">N12</span></td>
+  <td>族 Π → "若干局部高斯"</td>
+  <td>先聚类样本，每簇独立更新，再按簇最小代价选一簇</td>
+  <td>簇数要定；簇内仍可能塌陷；需处理样本不均衡</td>
+</tr>
+<tr>
+  <td><b>混合族</b><br><span class="pill must">L32</span><span class="pill opt">N04</span></td>
+  <td>族 Π → 高斯混合</td>
+  <td>EM 拟合：<span class="m">β<sub>l</sub> ← N<sub>l</sub>/N</span>，各成分独立矩匹配</td>
+  <td>成分数固定；EM 局部最优；高维时成分间难分离</td>
+</tr>
+<tr>
+  <td><b>粒子排斥</b><br><span class="pill must">L28</span><span class="pill opt">L35</span></td>
+  <td>族 Π → 粒子集 + 核</td>
+  <td>Stein 变分：朝高密度走 + 相互推开（D13）</td>
+  <td>核宽敏感；粒子数 = 模式容量；无闭式收敛保证</td>
+</tr>
+<tr>
+  <td><b>最优传输</b><br><span class="pill must">L24</span><span class="pill opt">L22</span></td>
+  <td>散度 → Wasserstein/熵正则 OT</td>
+  <td>Sinkhorn：把样本质量<b>分配</b>到目标而非<b>平均</b>坐标（D11）</td>
+  <td>迭代求解开销；<span class="m">ε</span> 选择影响硬度；需要代价矩阵</td>
+</tr>
+<tr>
+  <td><b>序贯蒙特卡洛</b><br><span class="pill edge">N17</span></td>
+  <td>更新 → 重采样 + 移动</td>
+  <td>维护粒子集，按权重重采样，退化前补充（如 MCMC 移动）</td>
+  <td>需要 resample 判据；粒子贫化；实现复杂度高</td>
+</tr>
+</table>
+
+<div class="box insight">
+<div class="h">怎么选：一句话决策</div>
+<p><b>有可靠先验/生成模型能直接提出正确模式</b> ⇒ 选优（最便宜）。<b>模式数未知但可分离</b> ⇒ 聚类或混合。<b>需要持续保持多样性、模式间要探索</b> ⇒ Stein / SMC。<b>要把一批轨迹精确匹配到一个目标分布</b> ⇒ OT。注意这四种的<em>目标</em>并没有变，变的都是"怎样在不平均的前提下回到可采样表示"。</p>
+</div>
+
+<h3><span class="num">4.3</span>最优传输：分配而不是平均（D11）</h3>
+
+<details class="deriv" id="d11">
+<summary><span class="did">D11</span>Sinkhorn 迭代为什么能保住模式<span class="why">OT-MPC / MPOT 的数学内核</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>写出熵正则 OT 的问题、导出 Sinkhorn 的交替归一化，并说明它在采样控制里究竟替代了主式的哪一步。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>问题。</strong>有 <span class="m">N</span> 个样本（质量 <span class="m">a<sub>i</sub></span>）要"搬到"目标侧的 <span class="m">M</span> 个位置（质量 <span class="m">b<sub>j</sub></span>，比如 N 个就对应 N 个目标点），搬运代价 <span class="m">C<sub>ij</sub></span>（欧氏距离的平方，或用代价 <span class="m">J</span>）：</p>
+<div class="eq small">
+Π<sup>*</sup> = argmin<sub>Π ∈ 𝒞(a,b)</sub> ⟨C, Π⟩ − ε H(Π) ,
+&nbsp;&nbsp; 𝒞 = { Π ≥ 0 : Π<span style="font-style:normal">1</span> = a , Π<sup>⊤</sup><span style="font-style:normal">1</span> = b } .
+</div>
+<p>约束是"行和 = 供给、列和 = 需求"：每个样本的质量必须全部送出去，每个目标必须被填满。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>解的结构。</strong>对 <span class="m">Π</span> 求导（含行列约束的拉格朗日乘子 <span class="m">f, g</span>）：</p>
+<div class="eq small">
+Π<sub>ij</sub> = u<sub>i</sub> K<sub>ij</sub> v<sub>j</sub> ,
+&nbsp;&nbsp; K<sub>ij</sub> = exp(−C<sub>ij</sub>/ε) ,
+&nbsp;&nbsp; u<sub>i</sub> = e<sup>f<sub>i</sub>/ε</sup>, v<sub>j</sub> = e<sup>g<sub>j</sub>/ε</sup> .
+</div>
+<p>即"一个固定的核矩阵 <span class="m">K</span> 加两个对角缩放"。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>Sinkhorn 迭代。</strong>交替满足两个约束（每次都是闭式）：</p>
+<div class="eq small">
+u ← a ⊘ (K v) , &nbsp;&nbsp; v ← b ⊘ (K<sup>⊤</sup>u) ,
+</div>
+<p>重复到收敛（线性收敛，通常几十次就够）。这在实现上就是两次矩阵乘 + 逐元素除，非常便宜。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>为什么它能保住模式。</strong>关键在"<span class="m">Π</span> 是一个<em>分配矩阵</em>"。更新后的每个位置是</p>
+<div class="eq small">
+z<sub>i</sub><sup>+</sup> = ∑<sub>j</sub> (Π<sub>ij</sub>/a<sub>i</sub>) · (目标点 <sub>j</sub>) ,
+</div>
+<p>它是"把质量按最优方案搬到附近目标点后的位置"——<strong>质量不会被跨峡谷搬运</strong>，因为那样搬运代价太大。于是两簇样本各自朝自己那侧的峰移动，而不是合并到中间。<span class="m">ε→0</span> 时退化成硬分配（类 CEM）；<span class="m">ε→∞</span> 时退化成均匀平均（回到 MPPI 的陷阱）。<strong>所以 ε 是"平均↔分配"的连续旋钮</strong>。</p>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>它替代了主式的哪一步。</strong>不是替代采样，也不是替代打分，而是替代"投影"：把"投影到单高斯（求矩）"换成"投影到传输计划（保质量搬运）"。族 Π 实际上从"一个高斯"变成了"一组保持分离的粒子"。这就是为什么 OT-MPC 能在不做聚类的情况下保住多条轨迹。</p>
+</div>
+
+<div class="box warn">
+<div class="h">实现提醒</div>
+<p>OT 需要一个<em>目标侧</em>的分布。实践中常见两种取法：把当前样本自身作为目标（自传输，等价于"只重排不改位置"），或把上一轮/先验样本作为目标。两者的语义完全不同，读论文时要看清 <span class="m">b</span> 是什么。另外 <span class="m">C</span> 用欧氏距离还是用 <span class="m">J</span> 的差，决定了传输是"几何"还是"代价"驱动的。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">4.4</span>Stein 变分：用排斥力维持多峰（D13）</h3>
+
+<details class="deriv" id="d13">
+<summary><span class="did">D13</span>SVGD 更新式里的两项分别是什么<span class="why">SV-MPC / SVG-MPPI 的内核</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>给出 Stein 变分梯度下降的更新式，并解释"吸引力 + 排斥力"如何让一批粒子同时覆盖多个峰。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>设定。</strong>维护 <span class="m">N</span> 个粒子 <span class="m">{U<sub>i</sub>}</span>，希望它们（作为经验分布）逼近 <span class="m">p<sup>*</sup></span>。不用参数族，用<em>确定性搬运</em>：<span class="m">U<sub>i</sub> ← U<sub>i</sub> + η φ(U<sub>i</sub>)</span>。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>目标函数。</strong>在 RKHS（核 <span class="m">k</span> 诱导）的单位球内，找使 <span class="m">D<sub>KL</sub>(q‖p<sup>*</sup>)</span> 下降最快的方向。对 <span class="m">q = (1/N)∑δ<sub>U<sub>i</sub></sub></span> 求变分导数，得到</p>
+<div class="eq">
+φ(U<sub>i</sub>) = (1/N) ∑<sub>j</sub> [ k(U<sub>j</sub>, U<sub>i</sub>) ∇<sub>U<sub>j</sub></sub> log p<sup>*</sup>(U<sub>j</sub>) + ∇<sub>U<sub>j</sub></sub> k(U<sub>j</sub>, U<sub>i</sub>) ]
+<span class="lbl">第一项：朝高密度搬运（用邻域的得分）；第二项：粒子间排斥</span>
+</div>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>两项各自的作用。</strong></p>
+<table class="tight" style="margin:8px 0 0">
+<tr><th style="width:30%">项</th><th>在双峰例子里的行为</th></tr>
+<tr><td><span class="m">k·∇log p<sup>*</sup></span>（吸引力）</td><td>每个粒子被邻域内的梯度拉向最近的峰。<b>注意</b>：<span class="m">∇log p<sup>*</sup></span> 在谷底是"指向外"的，所以即使粒子在谷中间也会被推走——这一项就破了 D10 的不动点。</td></tr>
+<tr><td><span class="m">∇k</span>（排斥力）</td><td>粒子彼此推开，防止全部塌到一个峰。<b>核宽</b>决定"多远算太近"：核太窄⇒排斥不足⇒塌陷；核太宽⇒过度分散⇒不收敛。</td></tr>
+</table>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>与 MPPI 的关系。</strong>去掉排斥项、把核取成常数，就退化成"每个粒子各自做梯度上升"——那会全部塌到同一个峰。所以<strong>排斥项是唯一的多样性来源</strong>。这也是为什么 SV-MPC 类方法通常直接对控制序列（而非状态）做 Stein，维度低、核更好调。</p>
+</div>
+
+<div class="step"><span class="sn">5</span>
+<p><strong>一个实践要点。</strong><span class="m">∇log p<sup>*</sup> = −∇J/λ + ∇log ρ</span>。在只有 rollout 的场景下 <span class="m">∇J</span> 不可得，所以 SVG-MPPI 用"局部探测 + 代理梯度"来估计它；在有可导仿真的场景下直接用真梯度。这条差别决定它能不能用在真机上。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">4.5</span>改提议的代价：重要性修正（D12）</h3>
+
+<details class="deriv" id="d12">
+<summary><span class="did">D12</span>提议与基准不一致时，为什么权重里会多出一个"控制代价"<span class="why">解释 IT-MPC 论文里的神秘项</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>算出"样本来自 q，但权重按 <span class="m">e<sup>−J/λ</sup></span> 写"时实际在逼近哪个分布，并给出修正项的精确形式。</div>
+
+<div class="step"><span class="sn">1</span>
+<p>设样本 <span class="m">U<sub>i</sub> ~ q = N(ū, Σ)</span>，而基准 <span class="m">ρ = N(ū<sub>0</sub>, Σ)</span>（例如上一轮的名义解、或外部控制器给的参考）。按主式，正确权重是 <span class="m">w<sub>i</sub> ∝ ρ(U<sub>i</sub>)e<sup>−J<sub>i</sub>/λ</sup>/q(U<sub>i</sub>)</span>。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p>若实现里忽略了 <span class="m">ρ/q</span>，直接用 <span class="m">w<sub>i</sub> ∝ e<sup>−J<sub>i</sub>/λ</sup></span>，则加权均值逼近的是</p>
+<div class="eq small">
+E<sub>q</sub>[U e<sup>−J/λ</sup>] / E<sub>q</sub>[e<sup>−J/λ</sup>]
+= 分布 ∝ q(U) e<sup>−J(U)/λ</sup> 的均值 = 目标 ∝ p<sup>*</sup>(U)·(q(U)/ρ(U)) 的均值 。
+</div>
+<p><strong>你解的是一个被 q/ρ 额外倾斜过的问题。</strong></p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p>对同协方差高斯，对数密度比是<strong>线性</strong>的：</p>
+<div class="eq small">
+log q(U) − log ρ(U) = (1/2)[ −(U−ū)<sup>⊤</sup>Σ<sup>−1</sup>(U−ū) + (U−ū<sub>0</sub>)<sup>⊤</sup>Σ<sup>−1</sup>(U−ū<sub>0</sub>) ]
+= (ū − ū<sub>0</sub>)<sup>⊤</sup>Σ<sup>−1</sup> U + const .
+</div>
+<p>所以有效代价是 <span class="m">J(U) − λ(ū−ū<sub>0</sub>)<sup>⊤</sup>Σ<sup>−1</sup>U</span>：<strong>多了一个线性项</strong>，等价于在代价里加了一个"偏离参考就要罚"的控制代价。</p>
+</div>
+
+<div class="step"><span class="sn">4</span>
+<p><strong>两种正确写法。</strong>要么把这一项显式加进 <span class="m">J</span>（很多 IT-MPPI 论文的"control cost term"就是它），要么在权重里乘上完整的 <span class="m">ρ/q</span>。二者数学等价，<strong>但同时做就会重复计入</strong>。这就是"同一篇论文的不同实现跑出不同结果"的常见来源。</p>
+</div>
+
+<div class="box key">
+<div class="h">判定方法</div>
+<p>看到代码里有 <span class="m">+ λ·(ū−ū<sub>ref</sub>)<sup>⊤</sup>Σ<sup>−1</sup>W</span> 或类似项，先确认它的基准 <span class="m">ρ</span> 是不是等于实际采样分布 <span class="m">q</span>：<b>若相等，这一项应恒为 0</b>；若不相等，则必须加且只能加一次。</p>
+</div>
+</div>
+</details>
+
+<h2 id="t5"><span class="num">T5 · 约束与接触</span>非光滑为什么反而是优势</h2>
+
+<p>接触丰富任务（G1 搬箱、推、抓）的代价是<strong>不连续、不可导</strong>的：碰撞、摩擦锥、接触切换。对梯度法这是灾难，对采样法却是天然适配——因为主式只需要 <span class="m">J</span> 的<em>值</em>。但"适配"不等于"没问题"，这一层讲清三件事：约束怎么进主式、投影为什么会失效、接触为什么改变了有效地形。</p>
+
+<h3><span class="num">5.1</span>约束的三种编码</h3>
+
+<table>
+<tr><th style="width:16%">编码</th><th style="width:30%">数学形式</th><th style="width:26%">对 p<sup>*</sup> 的影响</th><th>问题</th></tr>
+<tr>
+  <td><b>惩罚</b></td>
+  <td class="m">J̃ = J + μ∑ max(0, g(U))<sup>2</sup></td>
+  <td>目标在可行域外被压低但<b>不为零</b></td>
+  <td>μ 太小则违反，太大则地形极陡，ESS 崩</td>
+</tr>
+<tr>
+  <td><b>支持域</b></td>
+  <td class="m">p<sup>*</sup> ∝ ρ(U)e<sup>−J/λ</sup>·1[U∈𝒰]</td>
+  <td>不可行点质量为 <b>0</b>（硬约束）</td>
+  <td>需要截断采样或拒绝采样；拒绝率可能很高</td>
+</tr>
+<tr>
+  <td><b>投影</b></td>
+  <td class="m">U ← Proj<sub>𝒰</sub>(U)</td>
+  <td>把样本拉回可行域，<b>改变分布</b></td>
+  <td>见 D14：破坏平滑恒等式，可能卡在边界</td>
+</tr>
+</table>
+
+<h3><span class="num">5.2</span>为什么"先投影再平均"不是一个投影（D14）</h3>
+
+<details class="deriv" id="d14">
+<summary><span class="did">D14</span>裁剪/投影造成边界吸附的两个机制<span class="why">约束采样 MPC 最常见的隐性失败</span></summary>
+<div class="body">
+<div class="goal"><b>目标</b>说明两种常见做法（在代价里裁剪、对样本投影）为什么会让搜索<b>停在边界不动</b>，并给出替代方案。</div>
+
+<div class="step"><span class="sn">1</span>
+<p><strong>机制 A：裁剪让代价在边界外变平。</strong>设真实约束代价是 <span class="m">c(u) = ∞ (u∉𝒰)</span>，实现里用 <span class="m">c̃(u) = max(0, u−u<sub>max</sub>)<sup>2</sup>·μ</span>。取 <span class="m">U</span> 全在边界外很远，则 <span class="m">c̃</span> 增长但仍然<em>可微且单调</em>——这还好。问题出在更常见的"clip"写法：<span class="m">c̃(u) = c(clip(u))</span>。此时边界外整片区域的代价<strong>完全相同</strong>，梯度为 0，<span class="m">p<sup>*</sup></span> 在边界上堆出一个<em>原子</em>。加权均值会精确落在边界上，而且下一步仍然没有向内的推动力。</p>
+</div>
+
+<div class="step"><span class="sn">2</span>
+<p><strong>机制 B：投影破坏平滑恒等式。</strong>D6 的推导依赖 <span class="m">p<sub>Σ</sub> = p<sup>*</sup>∗N(0,Σ)</span> 这一卷积结构。若对每个样本先投影 <span class="m">U<sub>i</sub> ← Proj(U<sub>i</sub>)</span> 再加权平均，得到的不是任何平滑目标的梯度——它是 <span class="m">Proj<sub>#</sub>p<sup>*</sup></span>（推前分布）的矩匹配，而推前分布通常在边界上奇异。后果：</p>
+<div class="eq small">
+<span style="font-style:normal">投影后平均</span> ≠ <span style="font-style:normal">平均后投影</span> ，
+&nbsp;&nbsp; 且 <span style="font-style:normal">投影后平均</span> 一般 <span style="font-style:normal">不在</span> 可行域内（凸集时例外）。
+</div>
+<p>凸约束（箱型、线性）下"平均后投影"是安全的；<strong>非凸约束（接触、障碍）下两者都失效</strong>，因为可行集的凸组合可能落在不可行区。</p>
+</div>
+
+<div class="step"><span class="sn">3</span>
+<p><strong>更稳的三种做法。</strong></p>
+<table class="tight" style="margin:8px 0 0">
+<tr><th style="width:32%">做法</th><th>理由</th></tr>
+<tr><td>在<b>提议</b>上做截断采样（拒绝/重参数化到可行域）</td><td>目标保持 <span class="m">ρ·1[𝒰]</span> 的形式，D6 的恒等式仍然成立</td></tr>
+<tr><td>用<b>光滑屏障</b>而非硬裁剪：<span class="m">−μ log(−g(U))</span></td><td>越靠近边界代价越陡，<span class="m">p<sup>*</sup></span> 在内部有峰，不会堆成原子</td></tr>
+<tr><td>保留一个<b>已知可行</b>的名义解作为兜底候选</td><td>即使采样全不可行，也有能执行的解；这是 Predictive Sampling 一类方法"保留名义解"的真正作用</td></tr>
+</table>
+</div>
+
+<div class="box insight">
+<div class="h">接触为什么反而适合采样</div>
+<p>接触的代价是<em>分段连续</em>的：碰撞时 <span class="m">J</span> 跳变，但每个分段内部光滑。<strong>采样法不需要跨越跳变去求导</strong>，它只需要比较跳变两侧的<em>值</em>。梯度法在这里要么平滑掉跳变（丢失接触信息），要么卡在不可导点。这就是为什么 DIAL-MPC、contact-implicit MPC、MBD 这类工作全都走采样路线——不是因为简单，而是因为非光滑正是它们的适用域。</p>
+</div>
+</div>
+</details>
+
+<h3><span class="num">5.3</span>接触隐式与多重打靶</h3>
+
+<p>两个在 E 文件夹里反复出现的结构，值得单独记一下它们的<strong>代价函数长什么样</strong>：</p>
+
+<table class="tight">
+<tr><th style="width:24%">结构</th><th>代价 / 变量的组织方式</th><th>解决的困难</th></tr>
+<tr>
+  <td><b>接触隐式</b><br><span class="pill opt">L01</span><span class="pill opt">L09</span></td>
+  <td>不预先指定接触序列。接触力、距离作为连续变量进优化，互补条件 <span class="m">0 ≤ λ<sub>n</sub> ⊥ φ(q) ≥ 0</span> 以软约束/惩罚进入 <span class="m">J</span>，由采样器自己找到"何时接触"。</td>
+  <td>接触序列是离散组合问题，枚举不可行</td>
+</tr>
+<tr>
+  <td><b>多重打靶</b><br><span class="pill opt">L27</span></td>
+  <td>把时域切成小段，每段独立参数化，段间用<b>缺陷约束</b>（defect）连接。搜索变量从"一整条轨迹"变成"每段的状态+动作"。</td>
+  <td>长时域下单点 shooting 的误差累积与搜索维度过高</td>
+</tr>
+</table>
+
+<div class="box warn">
+<div class="h">打靶法对采样 MPC 的额外要求</div>
+<p>多重打靶把维度摊开后，<em>每段的搜索维度降低</em>（好），但<em>总变量数上升</em>且段间必须一致（坏）。实践中必须配合"段内采样、段间投影/惩罚"的两级结构，否则样本几乎不可能同时满足所有缺陷约束。这也是为什么这类方法通常需要 GPU 并行 + 大量样本。</p>
+</div>
+
+<div class="box key">
+<div class="h">T5 的自检题</div>
+<p>① 为什么"在代价里 clip"会让搜索停在边界？② 凸约束与非凸约束下，"平均后投影"哪个安全？③ 接触隐式方法把什么从"离散枚举"变成了"连续变量"？④ 你的实现里如果对每个样本做了关节限位裁剪，D6 的哪一步被破坏了？</p>
+</div>
+<h2 id="t6"><span class="num">T6 · 先验与模型</span>ρ 是隐藏的第五个旋钮</h2>
+
+<p>主式里有一个符号经常被当成配角：<span class="m">ρ(U)</span>。但它是决定成败的那一项——它同时决定了"你在哪个区域搜索"和"你的搜索是否被数据绑架"。T2–T5 讨论的都是"有了样本之后怎么更新"，这一层讨论<strong>样本从哪来</strong>。</p>
+
+<h3><span class="num">6.1</span>ρ 的四类来源</h3>
+
+<table>
+<tr><th style="width:18%">来源</th><th style="width:26%">典型形式</th><th style="width:26%">优势</th><th>失效模式</th></tr>
+<tr>
+  <td><b>名义解 / 上轮解</b></td>
+  <td class="m">N(ū<sub>prev</sub>, Σ)</td>
+  <td>零成本、天然热启动；MPPI 的默认</td>
+  <td>上轮解在错盆地 ⇒ 无探索（D10）</td>
+</tr>
+<tr>
+  <td><b>样条 / 基函数</b><br><span class="pill opt">N02</span><span class="pill opt">N11</span></td>
+  <td class="m">U = Φc, ρ(c)</td>
+  <td>搜索维度从 <span class="m">H·d<sub>u</sub></span> 降到 <span class="m">dim c</span>；光滑性内建</td>
+  <td>基函数表达不了急剧切换（接触瞬间）</td>
+</tr>
+<tr>
+  <td><b>生成模型</b><br><span class="pill must">L06</span><span class="pill opt">N15</span></td>
+  <td class="m">ρ<sub>θ</sub>(U|c<sub>k</sub>) 学自数据</td>
+  <td>从数据里继承"哪些轨迹看似合理"；高维也有效</td>
+  <td>分布外任务直接失效（N15 用 bootstrap 补这一点）</td>
+</tr>
+<tr>
+  <td><b>世界模型</b><br><span class="pill opt">L34</span><span class="pill opt">N20</span></td>
+  <td class="m">潜空间里 rollout，再解码</td>
+  <td>不需要精确仿真器；可处理高维观测</td>
+  <td>潜空间误差累积；代价与真实任务不对齐</td>
+</tr>
+</table>
+
+<div class="box insight">
+<div class="h">最关键的一条设计原则</div>
+<p><strong>把"先验做什么"和"任务要什么"在结构上分开。</strong>D-MPC 的做法是显式分解 <span class="m">p(X,U|c) = p<sub>dyn</sub>(X|U,c)·ρ<sub>θ</sub>(U|c)</span>，任务代价只在<em>最后的选择</em>里进入：先由数据先验提候选，再由 <span class="m">R(X,U)</span> 打分。这与 DIAL 的"代价进入每一轮 score"形成对比。前者换任务不改提议，后者换任务立刻改变搜索目标。</p>
+<p>这个差别不是风格问题：<em>先验来自数据、而任务来自人</em>时，分离让"新任务"不需要新数据；<em>先验很弱、但仿真可靠</em>时，让代价深度参与能避免先验把搜索锁死。判断一篇论文属于哪类，看它的 <span class="m">J</span> 出现在哪个位置就够了。</p>
+</div>
+
+<h3><span class="num">6.2</span>先验错配：有效搜索体积的坍缩</h3>
+
+<p>一个不严格但很有用的量化直觉。设真实低代价集是 <span class="m">Ω<sup>*</sup></span>，先验 <span class="m">ρ</span> 的质量集中在 <span class="m">Ω<sub>ρ</sub></span>。则</p>
+
+<div class="eq small">
+P( 至少一个样本落在 Ω<sup>*</sup> ) ≈ 1 − (1 − ρ(Ω<sup>*</sup>))<sup>N</sup> ,
+&nbsp;&nbsp; ρ(Ω<sup>*</sup>) = ∫<sub>Ω<sup>*</sup></sub> ρ dU .
+</div>
+
+<p>要让这个概率超过 <span class="m">1−δ</span>，需要 <span class="m">N ≳ log(1/δ)/ρ(Ω<sup>*</sup>)</span>。<strong>如果先验把 <span class="m">Ω<sup>*</sup></span> 的概率压到 <span class="m">10<sup>−6</sup></span>，你就需要百万级样本</strong>——这正是"离线学到的先验在新场景失效"的定量形态。相反，退火之所以有效，本质是让<em>有效</em>先验（大核卷积后的 <span class="m">p<sub>Σ</sub></span>）在早期覆盖更宽，把 <span class="m">ρ(Ω<sup>*</sup>)</span> 人为抬高。</p>
+
+<div class="box warn">
+<div class="h">一个容易忽略的推论</div>
+<p>先验和温度是<em>竞争关系</em>，不是独立旋钮。λ 很小而 ρ 很尖时，实际搜索体积由 ρ 决定，调 λ 几乎无效；λ 很大时 ρ 的影响被抹平，但你也失去了先验带来的方向性。<strong>调参时先看哪个在起主导作用</strong>，别同时拧两个。</p>
+</div>
+
+<h3><span class="num">6.3</span>模型误差如何进入：它不只是"仿真不准"</h3>
+
+<p>采样 MPC 里模型的作用与梯度法不同：它不提供梯度，只提供<strong>候选轨迹的代价</strong>。所以模型误差的传导方式是——</p>
+
+<div class="eq small">
+J<sub>model</sub>(U) = J<sub>true</sub>(U) + ε(U) ,
+&nbsp;&nbsp; <span style="font-style:normal">于是</span> &nbsp; p<sup>*</sup><sub>model</sub> ∝ p<sup>*</sup><sub>true</sub> · e<sup>−ε(U)/λ</sup> .
+</div>
+
+<p>这是一个<em>乘性</em>倾斜，和 D12 的形式一模一样。<strong>模型误差的作用等价于给目标分布加了一个与 λ 同阶的额外先验。</strong>两个直接后果：</p>
+
+<ul>
+<li><b>λ 大（软目标）时模型误差的影响小</b>，因为 <span class="m">ε/λ</span> 小；但软目标本身解得不精确。</li>
+<li><b>λ 小（硬目标）时模型误差被放大</b>，算法会精确地优化一个错的代价——这比"优化得不准"更危险，因为它会<em>自信地</em>选错。</li>
+</ul>
+
+<div class="box key">
+<div class="h">工程含义</div>
+<p>模型越不准，越应该用<em>较大</em>的 λ 和<em>较短</em>的预测时域（减少误差累积），并用重规划频率来补偿。反过来，如果模型很准而 λ 取得很大，你是在浪费模型精度。这两者的匹配关系比任何单个超参都重要。</p>
+</div>
+
+<h2 id="t7"><span class="num">T7 · 闭环与系统</span>把开环迭代塞进滚动决策</h2>
+
+<p>到目前为止我们解的都是<strong>一个时刻的开环问题</strong>：给定 <span class="m">x<sub>k</sub></span>，求 <span class="m">U<sub>k</sub><sup>*</sup> = (u<sub>k</sub>,…,u<sub>k+H−1</sub>)</span>。真实系统要求的是<em>闭环</em>：执行 <span class="m">u<sub>k</sub></span>，观测新状态，重来。这一步看似只是"加个循环"，实际上引入了一整套新的理论问题，而且这些问题的答案大都<strong>不如宣传的那样强</strong>。</p>
+
+<h3><span class="num">7.1</span>滚动结构里真正发生的三件事</h3>
+
+<table class="tight">
+<tr><th style="width:20%">机制</th><th style="width:34%">做什么</th><th>为什么重要</th></tr>
+<tr>
+  <td><b>首动作执行</b></td>
+  <td>只执行 <span class="m">u<sub>k</sub></span>，丢弃其余</td>
+  <td>把开环解变成反馈律；也是"为什么开环最优 ≠ 闭环最优"的来源</td>
+</tr>
+<tr>
+  <td><b>窗口前移 + 热启动</b></td>
+  <td>解 <span class="m">(u<sub>k+1</sub>,…,u<sub>k+H−1</sub>,·)</span> 作为下一轮的初始中心</td>
+  <td>等价于给 ρ 一个强先验。好：省算力；坏：锁死在旧盆地（T6）</td>
+</tr>
+<tr>
+  <td><b>在线重规划</b></td>
+  <td>每 <span class="m">Δt</span> 重解一次</td>
+  <td>补偿模型误差与扰动。<span class="m">Δt</span> 越小误差累积越少，但算力需求越高</td>
+</tr>
+</table>
+
+<div class="box warn">
+<div class="h">热启动是双刃剑</div>
+<p>热启动让每一轮都在"上一轮最优解附近"搜索，这在<b>任务不变</b>时是巨大加速。但一旦出现突发的模式切换（障碍出现、接触丢失、目标改变），热启动会让搜索<em>无法离开</em>旧盆地——因为先验的质量几乎全在旧解上（T6.2 的坍缩）。工程解法：检测到"最优代价连续多轮不下降"或"ESS 异常低"时，<b>临时重置中心或加宽 Σ</b>。这类"退化检测"机制在论文里很少写，但在真机上几乎必需。</p>
+</div>
+
+<h3><span class="num">7.2</span>稳定性与递归可行性：诚实的边界</h3>
+
+<p>这是最容易被论文标题误导的地方。需要分清三个层次：</p>
+
+<table>
+<tr><th style="width:22%">性质</th><th style="width:30%">经典 MPC 的条件</th><th>采样 MPC 的现状</th></tr>
+<tr>
+  <td><b>递归可行性</b></td>
+  <td>存在终端集 + 终端控制律，保证下轮问题可行</td>
+  <td><b>一般不成立。</b>样本有限、无终端约束时，下一轮可能找不到可行解。常见补救：保留上一轮可行解作为兜底候选</td>
+</tr>
+<tr>
+  <td><b>闭环稳定性</b></td>
+  <td>终端代价 ≥ 值函数 + 可行性 ⇒ 单调下降</td>
+  <td><b>仅在极强假设下有结论</b>（无限样本、精确优化、有终端项）。有限 <span class="m">N</span> 时目标值甚至可能不单调</td>
+</tr>
+<tr>
+  <td><b>渐近最优性</b></td>
+  <td>—</td>
+  <td>有 λ→0、N→∞ 的极限结论；但 λ→0 与 ESS 塌陷冲突，实践里两者不能同时满足</td>
+</tr>
+</table>
+
+<div class="box insight">
+<div class="h">该怎么读"provably stable"这类表述</div>
+<p>先找三件事：<strong>(1)</strong> 有没有终端代价/终端集；<strong>(2)</strong> 优化器是否被假设为"精确求解"（采样 MPC 尤其做不到）；<strong>(3)</strong> 噪声是否被假设为零或高斯匹配。三者缺一，结论就退化成一个"在理想化模型上成立"的陈述。这不是说论文在骗人——理想化分析确实能揭示机制——但它<em>不能</em>直接搬到你的 G1 真机上。</p>
+<p>一个更实用的替代目标：不要追求"证明稳定"，而是保证 <strong>(a) 每轮有可行解</strong>（兜底候选）、<strong>(b) 代价随重规划单调不升到某个界</strong>（监控曲线）、<strong>(c) 失败可检测</strong>（ESS/代价突变的告警）。</p>
+</div>
+
+<h3><span class="num">7.3</span>算力预算：三个数的乘积</h3>
+
+<div class="eq">
+<span style="font-style:normal">单轮耗时</span> ≈ N × H × ( <span style="font-style:normal">单步仿真成本</span> ) / <span style="font-style:normal">并行度</span>
+<span class="lbl">N 样本数 · H 预测步数 · 并行度由 GPU/多线程/多仿真器实例决定</span>
+</div>
+
+<p>这个乘积解释了 60 篇语料里大量工程工作的动机：</p>
+
+<ul>
+<li><strong>降 N</strong> ⇒ 需要更好的先验（T6）或更强的更新（iCEM 的成功率外推、Smooth 采样）。</li>
+<li><strong>降 H</strong> ⇒ 需要更短的窗口 + 更快的重规划，或样条/基函数参数化。</li>
+<li><strong>提并行度</strong> ⇒ GPU 批量仿真（MuJoCo MJX、Isaac）、MPPI-Generic 这类库。</li>
+<li><strong>降单步成本</strong> ⇒ 降阶模型、接触隐式的简化、点云/距离场的近似。</li>
+</ul>
+
+<div class="box plain">
+<div class="h">一个实用的取舍表</div>
+<table class="tight" style="margin:8px 0 0">
+<tr><th style="width:26%">瓶颈</th><th>优先动哪个</th></tr>
+<tr><td>实时性不够</td><td>先提并行（改仿真器），再考虑降 N；降 N 会直接损害搜索质量</td></tr>
+<tr><td>解质量不够（次优/卡住）</td><td>先修先验与退火，最后才加 N（N 的边际收益递减）</td></tr>
+<tr><td>真机上抖动/不稳</td><td>降低 λ 的时变性（平滑代价）、加重规划或加低通；不是加 N 能解决的</td></tr>
+<tr><td>长时域任务失败</td><td>缩短窗口 + 更多重规划，或用分层/事件级规划（外层离散选择）</td></tr>
+</table>
+</div>
+
+<div class="box key">
+<div class="h">T6–T7 的自检题</div>
+<p>① 为什么"先验把目标区域概率压到 10<sup>−6</sup>"需要百万样本？② 模型误差在数学上等价于什么？它与 λ 的竞争关系是什么？③ 热启动在什么情况下是有害的，怎么检测？④ 采样 MPC 的递归可行性为什么一般不成立，工程上怎么救？</p>
+</div>
+
+<hr>
+
+<h2 id="cheat"><span class="num">∑ · 速查</span>十二个推导，一页纸</h2>
+
+<p>把上面所有推导压缩成一张表。做题、调参、读论文时可以用它快速定位"我卡在哪一步"。</p>
+
+<table class="tight">
+<tr><th style="width:8%">编号</th><th style="width:24%">结论</th><th style="width:36%">公式</th><th>用途</th></tr>
+<tr><td><b><a href="#d1">D1</a></b></td><td>自由能恒等式</td><td class="m">min<sub>q</sub> E<sub>q</sub>[J]+λD<sub>KL</sub>(q‖ρ) = −λlogZ，解 p<sup>*</sup>∝ρe<sup>−J/λ</sup></td><td>一切的地基</td></tr>
+<tr><td><b><a href="#d2">D2</a></b></td><td>有效样本数</td><td class="m">ESS = 1/∑ŵ<sub>i</sub><sup>2</sup></td><td>在线监控搜索是否退化</td></tr>
+<tr><td><b><a href="#d3">D3</a></b></td><td>路径积分 / HJB 线性化</td><td class="m">GR<sup>−1</sup>G<sup>⊤</sup>=(1/λ)BB<sup>⊤</sup> ⇒ 指数加权</td><td>MPPI 的物理来源</td></tr>
+<tr><td><b><a href="#d4">D4</a></b></td><td>温度极限</td><td class="m">λ→0: 集中到 argmin；λ→∞: 退化成 ρ</td><td>λ 该怎么取</td></tr>
+<tr><td><b><a href="#d5">D5</a></b></td><td>前向 KL 到高斯 = 矩匹配</td><td class="m">μ=E[U], Σ=Cov[U]</td><td>MPPI/CEM 的共同祖先</td></tr>
+<tr><td><b><a href="#d6">D6</a></b></td><td>MPPI = 平滑目标的梯度步</td><td class="m">ū<sup>+</sup>=ū+Σ∇log g，g=p<sup>*</sup>∗N(0,Σ)</td><td><b>最重要的一条</b></td></tr>
+<tr><td><b><a href="#d7">D7</a></b></td><td>退火 = 反向扩散</td><td class="m">p<sub>n</sub>=p<sub>0</sub>∗N(0,Σ<sub>n</sub>)，Σ<sub>n</sub>↓</td><td>覆盖与精修</td></tr>
+<tr><td><b><a href="#d8">D8</a></b></td><td>得分 = 后验均值 − 当前点</td><td class="m">∇log p<sub>σ</sub>(y)=(E[z<sub>0</sub>|y]−y)/σ<sup>2</sup></td><td>扩散/MPPI 的统一</td></tr>
+<tr><td><b><a href="#d9">D9</a></b></td><td>二次代价收缩率</td><td class="m">ū<sup>+</sup>−U<sup>*</sup>=(I+ΣA/λ)<sup>−1</sup>(ū−U<sup>*</sup>)</td><td>调参直觉</td></tr>
+<tr><td><b><a href="#d10">D10</a></b></td><td>均值陷阱是<em>不动点</em></td><td class="m">双峰 ⇒ μ<sup>*</sup>=0</td><td>为什么迭代救不了</td></tr>
+<tr><td><b><a href="#d11">D11</a></b></td><td>Sinkhorn 保模式</td><td class="m">Π=diag(u)K diag(v)，K=e<sup>−C/ε</sup></td><td>OT 路线</td></tr>
+<tr><td><b><a href="#d12">D12</a></b></td><td>提议≠基准 ⇒ 线性控制代价</td><td class="m">log q−log ρ=(ū−ū<sub>0</sub>)<sup>⊤</sup>Σ<sup>−1</sup>U+c</td><td>修"神秘偏差"</td></tr>
+<tr><td><b><a href="#d13">D13</a></b></td><td>Stein：吸引 + 排斥</td><td class="m">φ=∑<sub>j</sub>[k∇log p<sup>*</sup>+∇k]/N</td><td>粒子多样性的唯一来源</td></tr>
+<tr><td><b><a href="#d14">D14</a></b></td><td>投影破坏平滑恒等式</td><td class="m">Proj 后再平均 ≠ 平均后再 Proj</td><td>约束采样的隐性坑</td></tr>
+</table>
+
+<div class="box insight">
+<div class="h">如果只能记三条</div>
+<p><strong>1.</strong> MPPI 的更新是<em>平滑目标</em>上的梯度步，不是对真实代价求导（D6）。<br>
+<strong>2.</strong> 前向 KL 求平均，所以双峰会被平均掉，而且这是稳定不动点（D5+D10）。<br>
+<strong>3.</strong> λ 与 Σ 在均值轨迹上只以 Σ/λ 出现，但它们的 ESS 行为不同（D9+D4）。</p>
+</div>
+
+<h2 id="papers"><span class="num">▤ · 挂载</span>60 篇论文在这棵树上的位置</h2>
+
+<p>下面把本地语料逐篇挂到节点上，并标注它在<strong>主式的哪个旋钮</strong>上做了改动。<span class="pill must">必读</span> 是理解理论的骨架，<span class="pill opt">选读</span> 是应用与工程，<span class="pill edge">前沿</span> 是当前活跃方向。文件名前缀与文件夹一致（A–G），可以直接在 <code>papers/</code> 下找到。</p>
+
+<h3>A · 采样质量 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T2/T3</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">改的旋钮</th><th>一句话贡献</th></tr>
+<tr><td><b>N01</b> iCEM</td><td>2020</td><td><span class="pill must">必读</span> 权重+提议</td><td>精英集成功率的<em>外推</em>取代纯代价排序；加入有色噪声，让少量样本也能稳定搜索。是"降 N"路线的起点。</td></tr>
+<tr><td><b>N03</b> Biased-MPPI</td><td>2024</td><td><span class="pill opt">选读</span> 提议 ρ</td><td>把多个辅助控制器混合进提议，需要正确的重要性修正（见 D12）。</td></tr>
+<tr><td><b>N05</b> Smooth MPPI</td><td>2021</td><td><span class="pill opt">选读</span> 权重</td><td>用光滑化的代价替代硬截断，减少抖动；是"权重函数"这一旋钮的细致研究。</td></tr>
+<tr><td><b>N06</b> 低频采样</td><td>2024</td><td><span class="pill opt">选读</span> 族/提议</td><td>在时间上稀疏采样 + 插值，降低有效维度，直接对应 D2 的维度诅咒。</td></tr>
+<tr><td><b>N07</b> 确定性 CEM</td><td>2025</td><td><span class="pill opt">选读</span> 样本构造</td><td>用确定性样本（正交/低差异序列）替代随机采样，降方差。</td></tr>
+<tr><td><b>N08</b> Smooth 确定性采样</td><td>2026</td><td><span class="pill opt">选读</span> 样本构造</td><td>把平滑与确定性采样合并；对应 T3 的地形讨论。</td></tr>
+<tr><td><b>N11</b> C-Uniform</td><td>2024</td><td><span class="pill opt">选读</span> 族</td><td>轨迹空间的均匀采样（而非参数空间），解决"参数均匀≠轨迹均匀"。</td></tr>
+</table>
+
+<h3>B · 多模态 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T4</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">出路</th><th>一句话贡献</th></tr>
+<tr><td><b>L28</b> Stein Variational MPC</td><td>2020</td><td><span class="pill must">必读</span> 粒子排斥</td><td>把 SVGD 引入 MPC，粒子间核排斥维持多峰（D13）。</td></tr>
+<tr><td><b>L35</b> Stein Guided MPPI</td><td>2024</td><td><span class="pill must">必读</span> 导引+局部</td><td>先用少量导引粒子定位一个模式，再在局部做 MPPI；解释"导引≠加权"。</td></tr>
+<tr><td><b>L24</b> 熵正则 OT 采样控制</td><td>2026</td><td><span class="pill must">必读</span> 散度→OT</td><td>把投影换成 Sinkhorn 传输（D11），<span class="m">ε</span> 是"平均↔分配"的旋钮。</td></tr>
+<tr><td><b>N12</b> Clustering-Embedded MPPI</td><td>2026</td><td><span class="pill opt">选读</span> 聚类</td><td>显式识别"平均导致的失败"，按簇更新再选簇。</td></tr>
+<tr><td><b>N04</b> Multi-Modal MPPI</td><td>2023</td><td><span class="pill opt">选读</span> 混合族</td><td>多模态 + 主动推断，用于 TAMP 式任务/运动联合决策。</td></tr>
+<tr><td><b>L09</b> Stein Projected ADMM</td><td>2026</td><td><span class="pill edge">前沿</span> 粒子+投影</td><td>Stein 与 ADMM 投影结合，发现多样的接触策略。</td></tr>
+<tr><td><b>L21</b> Model Tensor Planning</td><td>2025</td><td><span class="pill edge">前沿</span> 族</td><td>张量分解参数化提议，降低高维搜索成本。</td></tr>
+<tr><td><b>L03</b> 大规模并行 SMPC 部署</td><td>2026</td><td><span class="pill opt">选读</span> N/并行</td><td>真机接触丰富操作的大规模并行采样，是 T7.3 的实证。</td></tr>
+</table>
+
+<h3>C · 更新规则 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T2/T3/T4</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">改的旋钮</th><th>一句话贡献</th></tr>
+<tr><td><b>L32</b> Tsallis VI-MPC</td><td>2021</td><td><span class="pill must">必读</span> 散度</td><td>用 Tsallis 变形对数替换 KL，得到重尾权重；<span class="m">r→1</span> 回到 Gibbs。完整给出风险解释。</td></tr>
+<tr><td><b>N09</b> Trust-Region SMPC</td><td>2026</td><td><span class="pill must">必读</span> 尺度调度</td><td>用信任域控制每步更新幅度，直接对应 D9 的收缩率问题。</td></tr>
+<tr><td><b>N17</b> SMPC as SMC</td><td>2026</td><td><span class="pill edge">前沿</span> 更新</td><td>把整条迭代视为序贯蒙特卡洛推断，提供统一视角与重采样机制。</td></tr>
+<tr><td><b>L31</b> 二次模型近似降方差 MPPI</td><td>2026</td><td><span class="pill opt">选读</span> 估计器</td><td>局部二次拟合替代纯采样，降低 <span class="m">J</span> 估计方差（D2 的方差项）。</td></tr>
+</table>
+
+<h3>D · 地形与搜索方向 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T3</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">改的旋钮</th><th>一句话贡献</th></tr>
+<tr><td><b>L14</b> DIAL-MPC</td><td>2024</td><td><span class="pill must">必读</span> 尺度调度</td><td>扩散式退火 + 轨迹级/动作级双调度（D7）。全篇理论的核心参考。</td></tr>
+<tr><td><b>L23</b> Model-Based Diffusion</td><td>2024</td><td><span class="pill must">必读</span> 目标+采样</td><td>用已知模型直接算得分，把采样优化写成扩散过程（D8）。</td></tr>
+<tr><td><b>L17</b> 扩散式平滑的全局收敛</td><td>2026</td><td><span class="pill must">必读</span> 理论</td><td>给"退火能否保证全局"提供条件与证明；是 D7 边界的正面回答。</td></tr>
+<tr><td><b>L08</b> Reference-Free SMPC</td><td>2026</td><td><span class="pill opt">选读</span> 先验 ρ</td><td>无参考步态的运动发现，对应 T6 的"先验从哪来"。</td></tr>
+<tr><td><b>N18</b> CEM-GD</td><td>2021</td><td><span class="pill opt">选读</span> 投影</td><td>CEM 与梯度下降混合：采样做全局、梯度做局部。</td></tr>
+<tr><td><b>L16</b> GRASP</td><td>2026</td><td><span class="pill opt">选读</span> 权重</td><td>梯度导引的采样，用于物理重定向。</td></tr>
+<tr><td><b>L25</b> One-Step MPPI</td><td>2026</td><td><span class="pill opt">选读</span> N</td><td>用构型空间距离场把搜索压缩到一步，对应 T7.3 的预算问题。</td></tr>
+<tr><td><b>L02</b> KernelSOS</td><td>2026</td><td><span class="pill edge">前沿</span> 全局性</td><td>用平方和/核方法做全局采样优化，处理长时域接触。</td></tr>
+<tr><td><b>L12</b> DiffContact</td><td>2026</td><td><span class="pill opt">选读</span> 模型</td><td>可微接触动力学，给需要梯度的方法提供模型侧支持（与 T5 对照）。</td></tr>
+</table>
+
+<h3>E · 约束与接触 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T5</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">编码方式</th><th>一句话贡献</th></tr>
+<tr><td><b>L01</b> 全局接触隐式 MPC</td><td>2025</td><td><span class="pill must">必读</span> 支持域+互补</td><td>采样 + 局部互补，把"全局组合爆炸"拆成两层。</td></tr>
+<tr><td><b>L04</b> PRISM</td><td>2026</td><td><span class="pill opt">选读</span> 投影</td><td>投影集成 + 贝叶斯代价调节，双臂操作。</td></tr>
+<tr><td><b>L13</b> 约束扩散预测控制</td><td>2025</td><td><span class="pill opt">选读</span> 约束</td><td>把扩散先验与硬约束结合。</td></tr>
+<tr><td><b>L27</b> Shooting for Contact</td><td>2026</td><td><span class="pill opt">选读</span> 多重打靶</td><td>接触隐式多重打靶，缓解长时域误差累积。</td></tr>
+<tr><td><b>L30</b> UniConFlow</td><td>2026</td><td><span class="pill edge">前沿</span> 流匹配+约束</td><td>统一约束流匹配规划，带证书。</td></tr>
+</table>
+
+<h3>F · 模型与先验 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T6</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">先验类型</th><th>一句话贡献</th></tr>
+<tr><td><b>L06</b> D-MPC</td><td>2025</td><td><span class="pill must">必读</span> 生成先验</td><td>显式分解 <span class="m">p(X,U|c)=p<sub>dyn</sub>·ρ<sub>θ</sub></span>，任务只在选择阶段进入；可换任务/换动力学。</td></tr>
+<tr><td><b>N15</b> 从数据先验到 bootstrap</td><td>2025</td><td><span class="pill must">必读</span> 自举</td><td>用 SMPC 自己产生的数据精炼先验，闭环解决"分布外失效"。</td></tr>
+<tr><td><b>N13</b> KL 正则化的自适应先验</td><td>2025</td><td><span class="pill must">必读</span> 理论</td><td>把"先验学习"写成 KL 正则框架，直接对应 D1 的正则项。</td></tr>
+<tr><td><b>L15</b> Feedback-MPPI</td><td>2026</td><td><span class="pill opt">选读</span> 估计器</td><td>用 rollout 微分加速，避免低层控制器。</td></tr>
+<tr><td><b>L34</b> Dream-MPC</td><td>2026</td><td><span class="pill opt">选读</span> 世界模型</td><td>潜空间想象 + 梯度 MPC。</td></tr>
+<tr><td><b>N20</b> PRISM（先验导引想象采样）</td><td>2026</td><td><span class="pill opt">选读</span> 世界模型</td><td>在世界模型中做先验导引的采样。</td></tr>
+<tr><td><b>N22</b> 采样信念传播的对偶 MPC</td><td>2026</td><td><span class="pill edge">前沿</span> 不确定模型</td><td>把仿真不确定性纳入更新（对偶控制视角）。</td></tr>
+<tr><td><b>L26</b> 物理落地的生成策略</td><td>2026</td><td><span class="pill opt">选读</span> 生成+优化</td><td>用物理优化导引扩散策略。</td></tr>
+<tr><td><b>L20</b> PhysibleMDM</td><td>2026</td><td><span class="pill opt">选读</span> 推理时约束</td><td>在噪声上做优化以强制物理可行。</td></tr>
+<tr><td><b>L07</b> JEPA 世界模型规划</td><td>2026</td><td><span class="pill opt">选读</span> 世界模型</td><td>分析什么决定规划成功，是 T6.2 的实证。</td></tr>
+<tr><td><b>L29</b> 人形行为基座的测试时算力</td><td>2026</td><td><span class="pill opt">选读</span> 算力</td><td>测试时搜索与策略的权衡（T7.3）。</td></tr>
+<tr><td><b>L19</b> KODA</td><td>2026</td><td><span class="pill opt">选读</span> 数据对齐</td><td>人体示范的动力学观测对齐，偏数据侧。</td></tr>
+</table>
+
+<h3>G · 工具、预算与背景 <span style="font-weight:400;color:var(--ink-3);font-size:14px">→ 节点 T0/T7</span></h3>
+<table class="tight">
+<tr><th style="width:34%">论文</th><th style="width:12%">年份</th><th style="width:20%">角色</th><th>一句话贡献</th></tr>
+<tr><td><b>N21</b> MPC 即概率推断（教程）</td><td>2025</td><td><span class="pill must">必读</span> 综述</td><td>本知识树 T1/T2 的权威综述版，建议与本文交叉读。</td></tr>
+<tr><td><b>L33</b> 零阶优化导论</td><td>2025</td><td><span class="pill must">必读</span> 背景</td><td>把采样 MPC 放进零阶优化的地图里，理解它的理论边界。</td></tr>
+<tr><td><b>L11</b> 无导数优化方法</td><td>2019</td><td><span class="pill must">必读</span> 背景</td><td>D2 与 D5 的经典来源（IS、CEM、EDA）。</td></tr>
+<tr><td><b>L10</b> CEM 随机运动规划</td><td>2011</td><td><span class="pill opt">选读</span> 起源</td><td>CEM 用于轨迹参数空间的原始论文。</td></tr>
+<tr><td><b>N02</b> Predictive Sampling</td><td>2022</td><td><span class="pill must">必读</span> 工程基线</td><td>MuJoCo 里的样条参数 + 保留名义解 + 直接选优，是"工程上最省"的路线。</td></tr>
+<tr><td><b>N16</b> Judo</td><td>2025</td><td><span class="pill opt">选读</span> 实现</td><td>易用的 SMPC 包，适合对照实现细节。</td></tr>
+<tr><td><b>N14</b> 并行物理仿真 SMPC</td><td>2023</td><td><span class="pill opt">选读</span> 并行</td><td>T7.3 的"提高并行度"路线。</td></tr>
+<tr><td><b>N10</b> MPPI-Generic</td><td>2024</td><td><span class="pill opt">选读</span> 实现</td><td>CUDA 版 MPPI，工程参考。</td></tr>
+<tr><td><b>N19</b> STORM</td><td>2021</td><td><span class="pill opt">选读</span> 系统</td><td>关节空间快速 MPC，NVIDIA 集成框架。</td></tr>
+<tr><td><b>L05</b> 样本预算分配</td><td>2026</td><td><span class="pill opt">选读</span> 预算</td><td>"这些样本有用吗"——直接研究 N 的边际价值。</td></tr>
+<tr><td><b>L18</b> 广义 Schrödinger 桥</td><td>2024</td><td><span class="pill edge">前沿</span> 数学</td><td>OT 与扩散的桥梁，为 T4 的 OT 路线提供更深的理论。</td></tr>
+<tr><td><b>L22</b> OT 加速运动规划</td><td>2023</td><td><span class="pill opt">选读</span> OT 应用</td><td>OT-MPC 的直接前身，见 D11。</td></tr>
+</table>
+
+<div class="box plain">
+<div class="h">怎么用这张表</div>
+<p><b>先按"必读"读理论骨架</b>：D1–D14 对应的 14 篇左右（N21、L33、L11、N02、L14、L23、L17、L28、L35、L24、L32、N09、L06、N15、N13）。<b>再按你的任务挑分支</b>：接触多就 E 组，需要多模式就 B 组，要真机实时就 A+G 组。<b>最后把"前沿"当雷达</b>，不必细读，知道方向在哪里即可。</p>
+</div>
+
+<h2 id="route"><span class="num">✓ · 路线</span>四周，从零到能读新论文</h2>
+
+<p>下面这条路线假设你每天 2–3 小时。<strong>每一周都以"能复述 + 能手推"为验收，而不是"读完了"</strong>。勾选框会保存在本地浏览器里。</p>
+
+<h3>第 1 周 · 地基与引擎</h3>
+<p style="color:var(--ink-3);font-size:14.5px">目标：能手推 D1、D5、D6，并说清 MPPI 更新式的三种读法。</p>
+<div class="chk"><input type="checkbox" id="c1"><label for="c1">读 §T0，手推 D1（自由能恒等式）三遍，直到不看笔记</label></div>
+<div class="chk"><input type="checkbox" id="c2"><label for="c2">读 §T0.2，用一句话说清前向/反向 KL 的差别，并举一个双峰例子</label></div>
+<div class="chk"><input type="checkbox" id="c3"><label for="c3">手推 D5（前向 KL 到高斯 = 矩匹配），注意对 Σ 求导用 P=Σ⁻¹ 的技巧</label></div>
+<div class="chk"><input type="checkbox" id="c4"><label for="c4">手推 D6（MPPI = 平滑目标梯度步），重点是第 4 步的等价变换</label></div>
+<div class="chk"><input type="checkbox" id="c5"><label for="c5">读 N21（MPC 即推断教程）的 §II–III，与本文 T1/T2 对照</label></div>
+<div class="chk"><input type="checkbox" id="c6"><label for="c6">跑一个一维双井代价的 MPPI，观察 ESS 与收敛，验证 D9 的收缩率</label></div>
+
+<h3>第 2 周 · 地形与退火</h3>
+<p style="color:var(--ink-3);font-size:14.5px">目标：理解"为什么同一算法时好时坏"，并能解释退火在什么条件下有用。</p>
+<div class="chk"><input type="checkbox" id="c7"><label for="c7">读 §T3，手推 D9（收缩率），并代入两组数算出 M 轮后的误差</label></div>
+<div class="chk"><input type="checkbox" id="c8"><label for="c8">读 L14（DIAL-MPC）§III，对照 D7，画出噪声日程与"覆盖→精修"的关系</label></div>
+<div class="chk"><input type="checkbox" id="c9"><label for="c9">读 L23（MBD）与 D8，说明"用 rollout 估得分"与"训网络估得分"的差别</label></div>
+<div class="chk"><input type="checkbox" id="c10"><label for="c10">读 L17（扩散平滑的全局收敛），记下它需要的<b>具体假设</b></label></div>
+<div class="chk"><input type="checkbox" id="c11"><label for="c11">实验：同一双井问题上跑固定 Σ vs 退火，记录成功率；找出退火失效的参数区间</label></div>
+
+<h3>第 3 周 · 多模态与约束</h3>
+<p style="color:var(--ink-3);font-size:14.5px">目标：能诊断均值陷阱，并知道六种出路各自的代价。</p>
+<div class="chk"><input type="checkbox" id="c12"><label for="c12">手推 D10（双峰陷阱），验证它是<b>不动点</b>而不只是暂态</label></div>
+<div class="chk"><input type="checkbox" id="c13"><label for="c13">读 L28 / L35（Stein 两条线），手推 D13，说清排斥项为什么是多样性的唯一来源</label></div>
+<div class="chk"><input type="checkbox" id="c14"><label for="c14">读 L24（OT 采样控制），手推 D11 的 Sinkhorn 两步迭代，理解 ε 的旋钮作用</label></div>
+<div class="chk"><input type="checkbox" id="c15"><label for="c15">读 L32（Tsallis），手推 D7/Tsallis 权重，说明 r→1 的极限</label></div>
+<div class="chk"><input type="checkbox" id="c16"><label for="c16">读 §T5 + L01（接触隐式），写一段"为什么非光滑反而是采样法的优势"</label></div>
+<div class="chk"><input type="checkbox" id="c17"><label for="c17">手推/验证 D14：在你的实现里找出所有"投影/裁剪"，判断是否破坏 D6</label></div>
+
+<h3>第 4 周 · 先验、闭环与综合</h3>
+<p style="color:var(--ink-3);font-size:14.5px">目标：能把任意一篇新论文放进六旋钮坐标系，并给出可靠的工程取舍。</p>
+<div class="chk"><input type="checkbox" id="c18"><label for="c18">读 §T6 + L06（D-MPC）+ N15（bootstrap），说清"先验/任务分离"的两种设计</label></div>
+<div class="chk"><input type="checkbox" id="c19"><label for="c19">读 §T7，列出一份<b>你自己任务</b>的算力预算表（N×H×成本/并行度）</label></div>
+<div class="chk"><input type="checkbox" id="c20"><label for="c20">读 N09（信任域），把 D9 的收缩率与信任域边界对应起来</label></div>
+<div class="chk"><input type="checkbox" id="c21"><label for="c21">选一篇你<b>没读过</b>的论文（如 N17 或 L31），用六旋钮定位它，再读摘要验证</label></div>
+<div class="chk"><input type="checkbox" id="c22"><label for="c22">写一页自己的总结：主式 + 你最常用的三个旋钮 + 你任务上最容易踩的坑</label></div>
+
+<div class="box insight">
+<div class="h">验收标准（比"读完"更重要）</div>
+<p>合上文档，能在白纸上写出：<strong>①</strong> 主式和目标分布；<strong>②</strong> D1 的三步推导；<strong>③</strong> D6 的第 4 步等价变换；<strong>④</strong> 六旋钮表；<strong>⑤</strong> 双峰陷阱为什么是稳定不动点。<strong>五条写得出，这棵树就长在你身上了</strong>——剩下的论文都是往这棵树上挂叶子。</p>
+</div>
+
+<h2 id="traps"><span class="num">! · 陷阱</span>十个最常见的误解</h2>
+
+<ol>
+<li><p><b>"MPPI 在用仿真器求梯度。"</b> 不是。它在平滑目标上做梯度上升，只需代价的<em>值</em>（D6）。这也是为什么它能在不可导的接触模型上工作。</p></li>
+<li><p><b>"增大样本数 N 总能改善结果。"</b> N 的收益受先验限制（T6.2）。如果先验把目标区域概率压得很低，加 N 的边际收益接近零，应该改先验或加退火。</p></li>
+<li><p><b>"CEM 和 MPPI 是两种不同算法。"</b> 它们只差在权重函数（硬截断 vs 指数）和协方差是否自适应。在 OT 视角下是同一个温度旋钮的两端（§2.3）。</p></li>
+<li><p><b>"λ 调小就能更接近最优。"</b> λ→0 会让 ESS 塌到 1–2（D4），你等于在用 argmin 但付了 N 次采样的代价；而且模型误差会被放大（T6.3）。</p></li>
+<li><p><b>"多迭代几轮就能跳出均值陷阱。"</b> D10 说明它是稳定不动点。改迭代次数没用，必须改散度、族或换机制。</p></li>
+<li><p><b>"退火保证全局最优。"</b> 只在"峰间距小于核宽"这类条件下成立（D7 的边界）。相距很远的等代价模式，退火无能为力。</p></li>
+<li><p><b>"加了控制代价项更保守、更安全。"</b> 那一项<em>可能</em>只是 D12 的重要性修正。若基准 ρ 已等于采样分布 q，这一项应为零；错误地加两次会改变目标。</p></li>
+<li><p><b>"论文说 provably stable，所以能上真机。"</b> 先查三个假设：终端项、精确优化、噪声匹配（T7.2）。采样 MPC 通常三条都不满足。</p></li>
+<li><p><b>"约束用 clip 处理就够了。"</b> clip 会让边界外代价变平，搜索吸附到边界（D14）。非凸约束下"平均后投影"也不保证可行。</p></li>
+<li><p><b>"离线学到的先验可以直接换任务用。"</b> 先验覆盖的是训练分布。换任务/换动力学时，先验与任务代价必须分离（T6.1），否则先验会把搜索锁死。</p></li>
+</ol>
+
+<footer>
+<p><b>关于这份文档。</b>它是 <code>papers/foundations/SMPC_Theory_Knowledge_Base.html</code> 的重构版：组织轴从"逐篇论文"改为"概念依赖"，并补齐了原文档分散在各论文附录里的推导链（主式、D1–D14、六旋钮、T0–T7 分层）。原文档仍适合作为<em>公式原文与译文</em>的查证入口；本文适合作为<em>学习路径与理论骨架</em>。两篇对照读效果最好。</p>
+<p style="margin-top:10px">符号约定：<span class="m">k</span> 闭环时刻，<span class="m">h</span> 预测窗内偏移，<span class="m">m</span> 分布迭代序号，<span class="m">i</span> 样本序号，<span class="m">n</span> 退火/噪声层。代价统一用 <span class="m">J</span>（要最小化），回报用 <span class="m">R</span>。<span class="m">p<sup>*</sup></span> 为目标分布，<span class="m">q<sub>m</sub></span> 为当前提议，<span class="m">ρ</span> 为先验/基准。</p>
+</footer>
+
+</div><!-- /wrap -->
+</main>
+
+<script>
+(() => {
+  // ---- mobile nav ----
+  const nav = document.getElementById('nav');
+  const btn = document.getElementById('navbtn');
+  btn && btn.addEventListener('click', () => nav.classList.toggle('open'));
+  nav.addEventListener('click', e => { if (e.target.closest('a')) nav.classList.remove('open'); });
+
+  // ---- active section highlight ----
+  const links = [...nav.querySelectorAll('a[href^="#"]')];
+  const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const setActive = id => links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      const vis = entries.filter(e => e.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (vis.length) setActive(vis[0].target.id);
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    targets.forEach(t => io.observe(t));
+  }
+
+  // ---- checkboxes persist ----
+  const KEY = 'smpc-tree-checks-v1';
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  document.querySelectorAll('.chk input[type=checkbox]').forEach(cb => {
+    if (saved[cb.id]) { cb.checked = true; cb.closest('.chk').classList.add('done'); }
+    cb.addEventListener('change', () => {
+      cb.closest('.chk').classList.toggle('done', cb.checked);
+      saved[cb.id] = cb.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+    });
+  });
+
+  // ---- back to top ----
+  const top = document.getElementById('top');
+  addEventListener('scroll', () => top.classList.toggle('show', scrollY > 700), { passive: true });
+  top.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ---- open derivation when linked ----
+  function openTarget() {
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el && el.tagName === 'DETAILS') el.open = true;
+    if (el) setTimeout(() => el.scrollIntoView({ block: 'start' }), 60);
+  }
+  addEventListener('hashchange', openTarget);
+  openTarget();
+})();
+</script>
+</body>
+</html>

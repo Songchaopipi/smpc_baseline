@@ -1,0 +1,49 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\subsection{Sampling-based \acs*{MPC}}
+
+A prominent approach to sampling-based \ac{MPC} is the \ac{CEM}, which iteratively updates a proposal \ac{PDF} by selecting low-cost elite samples and maximizing their likelihood~\cite{rubinsteinCrossEntropy2004}.
+For Gaussian proposals, the updated moments for the next iteration are computed as the empirical mean and covariance of the selected control sequences~\cite{rubinsteinCrossEntropy2004}.
+To improve numerical robustness and reduce premature concentration of the proposal, many implementations introduce a momentum (or smoothing) term across iterations~\cite{rubinsteinCrossEntropy2004,pinneriSampleefficientCrossentropyMethod2021}.
+For the mean update, this is typically written as
+\begin{align}
+    \label{eq:cem_momentum_mean}
+    \evVarCem_{j+1} = \alpha \, \evVarCem_{j} + (1-\alpha) \, \evVarCem_{j}^{\prime} \enspace,
+\end{align}
+where $\evVarCem_{j}^{\prime}$ denotes the (unsmoothed) mean of the elite set.
+
+Related \ac{MPPI}-like methods also perform (iterative) proposal refinement, but they rely on importance weighting of sampled control sequences instead of hard elite selection~\cite{arXiv26_Walker_IFAC}.
+The weights are given by
+\begin{align}
+    \label{eq:imp_weights}
+    w^{(i)} \propto \exp\left(-\frac{1}{\lambda} J\left(\vVarCem^{(i)}\right) \right) \enspace,
+\end{align}
+and are used to compute the updated Gaussian moments as the control sequences' weighted sample mean and covariance.
+The inverse temperature $\lambda$ controls the exploration-exploitation trade-off and remains constant~\cite{williamsInformationtheoretic2018} or is adapted heuristically during optimization~\cite{pezzatoSamplingbasedModelPredictive2025}.
+% Following~\cite{pezzatoSamplingbasedModelPredictive2025}, one representative adaptation is
+% \begin{align}
+%     \label{eq:temp_adaption}
+%     \lambda_{j+1} = \begin{cases} 
+%         0.9 \, \lambda_j & \text{if~} \eta > \eta_{\mathrm{max}}
+%         \\
+%         1.2 \, \lambda_j & \text{if~} \eta < \eta_{\mathrm{min}}
+%         \\
+%         \lambda_j & \text{otherwise}        
+%         \end{cases} \enspace,
+% \end{align}
+% where $\eta$ is the normalization constant from \cref{eq:imp_weights},
+% %, which serves as a proxy for the effective sample size.
+% and $\lambda_j$ and $\lambda_{j+1}$ are the inverse temperatures in iterations $j$ and $j+1$, respectively.
+% Thresholds $\eta_{\mathrm{min}}$ and $\eta_{\mathrm{max}}$ are selected empirically to ensure smooth behavior; \eg,~\cite{pezzatoSamplingbasedModelPredictive2025} reports good performance for the range $[5,10]$.
+Furthermore, iterative \ac{MPPI} variants additionally employ momentum-style smoothing~\cref{eq:cem_momentum_mean} of the proposal update, analogous to \ac{CEM}, to mitigate premature convergence~\cite{bhardwajSTORMIntegratedFramework2022}.
+
+% Improvements in sampling
+Orthogonal to the above methods, improvements in sampling efficiency and smoothness of the optimized control inputs have been achieved by using low-discrepancy sequences, such as the Halton sequence~\cite{bhardwajSTORMIntegratedFramework2022}, time-correlated noise~\cite{pinneriSampleefficientCrossentropyMethod2021}, or, as in our previous work, by using optimal deterministic samples based on the \ac{LCD}~\cite{walkerSampleefficientSmoothCrossentropy2026,arXiv26_Walker_IFAC}.
+
+
+\subsection{Trust Regions in \ac*{RL}}
+In \ac{RL}, trust region methods provide principled policy updates that balance exploration and exploitation while ensuring stable learning.
+The core idea is to limit the update step by constraining the \ac{KL} divergence between the new policy and the old policy, preventing drastic changes that can lead to performance degradation.
+Adding an entropy constraint further encourages exploration and prevents premature convergence to suboptimal policies.
+These concepts have been established for policy search~\cite{petersRelativeEntropyPolicy2010,abdolmaleki2015model}, step-based \ac{RL}~\cite{schulmanTrustRegionPolicy2015}, episodic \ac{RL}~\cite{ottoDeepBlackboxReinforcement2023}, and gradient-based stochastic optimal control with quadratic reward functions~\cite{blessingTrustRegionConstrained2025}.

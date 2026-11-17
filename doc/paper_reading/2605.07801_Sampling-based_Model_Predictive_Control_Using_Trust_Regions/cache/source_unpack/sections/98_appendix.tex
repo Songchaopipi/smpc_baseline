@@ -1,0 +1,222 @@
+\appendix
+\subsection{Derivation of the Optimal Next Proposal}
+\label[appendix]{sec:appendix:lagrangian}
+
+Using the \ac{KL} divergence and entropy, given by
+\begin{align}
+    D_{\mathrm{KL}}(\pdf_{j+1} \| \pdf_{j})
+    &= \int_{\IR^{\dimVarCem}} \pdf_{j+1} (\vVarCem) \log \pdf_{j+1} (\vVarCem) \dd \vVarCem
+    \\
+    &\qquad
+    - \int_{\IR^{\dimVarCem}} \pdf_{j+1} (\vVarCem) \log \pdf_{j} (\vVarCem) \dd \vVarCem \enspace, \\
+    H(\pdf_{j+1})
+    &= -\int_{\IR^{\dimVarCem}} \pdf_{j+1} (\vVarCem) \log \pdf_{j+1} (\vVarCem) \dd \vVarCem \enspace,
+\end{align}
+the expanded Lagrangian~\cref{eq:tr:lagrangian} reads
+\begin{align}
+    &\mathcal{L}(\pdf_{j+1},\eta,\alpha, \nu)
+    = \int_{\IR^{\dimVarCem}} \pdf_{j+1}(\vVarCem) J(\vVarCem) \, \dd \vVarCem \\
+    &\qquad + (\eta + \alpha) \int_{\IR^{\dimVarCem}} \pdf_{j+1}(\vVarCem) \log \pdf_{j+1}(\vVarCem) \dd \vVarCem \\
+    &\qquad - \eta \int_{\IR^{\dimVarCem}} \pdf_{j+1}(\vVarCem) \log \pdf_{j}(\vVarCem) \dd \vVarCem \\
+    &\qquad - \eta \epsilon + \alpha H_{\min} 
+    % \\
+    % & \qquad 
+    + \nu\left(\int_{\IR^{\dimVarCem}} \pdf_{j+1}(\vVarCem) \dd  \vVarCem - 1\right) \enspace.
+\end{align}
+Taking the functional derivative point-wise w.r.t. $\pdf_{j+1}$ yields
+\begin{align}
+    \label{eq:lagrange_func_derivative}
+    \frac{\delta \mathcal{L}}{\delta \pdf_{j+1}}
+    & = J(\vVarCem) + (\eta + \alpha) \left( \log \pdf_{j+1}(\vVarCem) + 1 \right) 
+    \\
+    & \qquad
+    - \eta \log \pdf_{j}(\vVarCem) + \nu \enspace.
+\end{align}
+Setting this derivative to zero and solving for $\log \pdf_{j+1}$ gives
+\begin{align}
+    \label{eq:log_opt_proposal}
+    \log \pdf_{j+1}^{\ast}(\vVarCem)
+    = -\frac{J(\vVarCem)}{\eta + \alpha}
+    + \frac{\eta}{\eta + \alpha} \log \pdf_{j}(\vVarCem)
+    + C \enspace,
+\end{align}
+where $C = - \log Z_{\eta, \alpha}$ 
+% = -(\nu + \eta + \alpha)/(\eta + \alpha)$ 
+absorbs all additive constants. Exponentiating yields the optimal proposal $\pdf_{j+1}^{\ast}$ \cref{eq:opt_proposal}, where the multiplier $\nu$ is implicitly accounted for by $Z_{\eta, \alpha}$ required to satisfy the normalization constraint.
+
+
+\subsection{Derivation of the Dual Function}
+\label[appendix]{sec:appendix:dual}
+
+To derive the dual function $g(\eta, \alpha)$, we substitute the optimal proposal $\pdf_{j+1}^{\ast}$ back into the Lagrangian. 
+First, we take the logarithm of the optimal proposal \cref{eq:log_opt_proposal} multiplied by $\eta + \alpha$ (which is strictly positive, by \cref{thm:sum_positive}) to match the coefficient of the entropy term in the Lagrangian.
+% \begin{align}
+%     \log \pdf_{j+1}^{\ast}(\vVarCem) 
+%     = \frac{\eta}{\eta+\alpha} \log \pdf_j(\vVarCem) - \frac{J(\vVarCem)}{\eta+\alpha} - \log Z_{\eta,\alpha} \enspace.
+% \end{align}
+% Next, we multiply this expression by $(\eta + \alpha)$ to match the coefficient of the entropy term in the Lagrangian
+% \begin{align}
+%     (\eta + \alpha) \log \pdf_{j+1}^{\ast}(\vVarCem) 
+%     & = 
+%     \eta \log \pdf_j(\vVarCem) - J(\vVarCem) 
+%     \\
+%     & \quad
+%     - (\eta + \alpha) \log Z_{\eta,\alpha} \enspace.
+% \end{align}
+Taking the expectation of $(\eta + \alpha) \log \pdf_{j+1}^{\ast}(\vVarCem)$ w.r.t. $\pdf_{j+1}^{\ast}$ yields
+\begin{align}
+    &(\eta + \alpha) \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) \log \pdf_{j+1}^{\ast}(\vVarCem) \dd \vVarCem 
+    = 
+    \\
+    & \quad
+    \eta \int \pdf_{j+1}^{\ast}(\vVarCem) \log \pdf_j(\vVarCem) \dd \vVarCem 
+    % &\quad 
+    - \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) J(\vVarCem) \dd \vVarCem \\
+    &\quad - (\eta + \alpha) \log Z_{\eta,\alpha} \int \pdf_{j+1}^{\ast}(\vVarCem) \dd \vVarCem \enspace.
+    \label{eq:appendix:expected_log}
+\end{align}
+Since $\pdf_{j+1}^{\ast}$ is a valid \ac{PDF}, it integrates to $1$.
+% ($\int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast} \dd \vVarCem = 1$). 
+Then, substituting \cref{eq:appendix:expected_log} back into the simplified Lagrangian reads
+\begin{align}
+    &\mathcal{L}(\pdf_{j+1}^{\ast},\eta,\alpha) 
+    = \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) J(\vVarCem) \dd \vVarCem \nonumber \\
+    & \quad + \eta \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) \log \pdf_j(\vVarCem) \dd \vVarCem 
+    \\
+    & \quad - \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) J(\vVarCem) \dd \vVarCem - (\eta + \alpha) \log Z_{\eta,\alpha} \nonumber \\
+    &\quad - \eta \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) \log \pdf_j(\vVarCem) \dd \vVarCem \nonumber \\
+    &\quad - \eta \epsilon + \alpha H_{\min} \enspace,
+\end{align}
+where the normalization multiplier $\nu$ has been absorbed in $Z_{\eta, \alpha}$.
+Notice that the terms involving the expected cost 
+% $\int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast} J \dd \vVarCem$ 
+and the cross-entropy $\eta \int_{\IR^{\dimVarCem}} \pdf_{j+1}^{\ast}(\vVarCem) \log \pdf_j(\vVarCem) \dd \vVarCem$ cancel out. 
+The remaining terms yield the dual function \cref{eq:tr_dual}.
+% \begin{align}
+%     g(\eta, \alpha) = -\eta \epsilon + \alpha H_{\min} - (\eta + \alpha) \log Z_{\eta,\alpha} \enspace.
+% \end{align}
+
+
+% \subsection{Gradient of the Dual Function}
+% Substituting $\pdf_{j+1}^{\ast}$ from \cref{eq:opt_proposal} into the gradient of the dual function \cref{eq:tr_dual:gradient} gives
+% \begin{align}
+% & \frac{\partial g}{\partial \eta}
+%     =-\log Z_{\eta,\alpha} -\epsilon
+%     \\ 
+%     &
+%     -
+%     % \frac{1}{\eta+\alpha}
+%     \frac{\Eop_{\pdf_{j}} \left\{\pdf_{j}(\vVarCem)^{\frac{\eta}{\eta+\alpha}-1}\exp \left(-\frac{J(\vVarCem)}{\eta+\alpha}\right)\left(\alpha\log \pdf_{j}(\vVarCem)+J(\vVarCem)\right)\right\}}
+%     {(\eta+\alpha) Z_{\eta,\alpha}}
+% \\
+% & \frac{\partial g}{\partial \alpha}
+%     = -\log Z_{\eta,\alpha} +H_{\min}
+%     \\
+%     & 
+%     -
+%     % \frac{1}{\eta+\alpha}
+%     \frac{\Eop_{\pdf_{j}} \left\{\pdf_{j}(\vVarCem)^{\frac{\eta}{\eta+\alpha}-1}\exp \left(-\frac{J(\vVarCem)}{\eta+\alpha}\right)\left(-\eta\log \pdf_{j}(\vVarCem)+J(\vVarCem)\right)\right\} }
+%     {(\eta+\alpha) Z_{\eta,\alpha}}
+% \end{align}
+
+% \subsection{Strict Positivity of the Trust Region Multiplier}
+% \label[appendix]{sec:appendix:eta_positive}
+
+% \begin{theorem}
+%     \label{thm:eta_positive}
+%     Let $J$ be non-constant and, if the entropy constraint is active, let $\pdf^{\mathrm{G}} \propto \exp(-\nicefrac{J}{\bar{\alpha}})$ denote the Gibbs \ac{PDF} at the temperature $\bar{\alpha}$ for which the entropy bound is attained, \ie, $H(\pdf^{\mathrm{G}}) = H_{\min}$, and assume $\epsilon < D_{\mathrm{KL}}(\pdf^{\mathrm{G}} \| \pdf_j)$.
+%     Then, the trust region is active, \ie, $D_{\mathrm{KL}}(\pdf_{j+1}^{\ast} \| \pdf_j) = \epsilon$, and its multiplier is strictly positive, $\eta^{\ast} > 0$.
+% \end{theorem}
+% \textit{Proof:} Complementary slackness admits only the two alternatives $\eta^{\ast} = 0$ or $D_{\mathrm{KL}}(\pdf_{j+1}^{\ast} \| \pdf_j) = \epsilon$.
+% Assume $\eta^{\ast} = 0$. Then the \ac{KL} term drops out of the Lagrangian~\cref{eq:tr:lagrangian}, whose point-wise stationarity condition $J(\vVarCem) + \nu + \alpha ( \log \pdf_{j+1}(\vVarCem) + 1 ) = 0$ becomes independent of $\pdf_j$.
+% For $\alpha^{\ast} = 0$, it reduces to $J(\vVarCem) = -\nu$, contradicting the non-constant $J$; the Lagrangian is then linear in $\pdf_{j+1}$ and minimized by the Dirac delta at $\argmin_{\vVarCem} J(\vVarCem)$, which is not absolutely continuous w.r.t. $\pdf_j$ and thus yields $D_{\mathrm{KL}} = \infty > \epsilon$.
+% For $\alpha^{\ast} > 0$, it is solved by $\pdf_{j+1}^{\ast} = \pdf^{\mathrm{G}}$, with $\alpha^{\ast} = \bar{\alpha}$ fixed by the active entropy constraint, so that $D_{\mathrm{KL}}(\pdf^{\mathrm{G}} \| \pdf_j) > \epsilon$ by assumption.
+% In both cases, the candidate is infeasible, contradicting optimality.
+% Hence, only the second alternative remains, which requires $\eta^{\ast} > 0$. \hfill$\blacksquare$
+
+% Since $H(\pdf^{\mathrm{G}})$ increases strictly with the temperature, $\bar{\alpha}$ is unique.
+% The assumption on $\epsilon$ can be certified in advance.
+% Splitting the \ac{KL} divergence into entropy and cross-entropy and using $H(\pdf^{\mathrm{G}}) = H_{\min}$ gives $D_{\mathrm{KL}}(\pdf^{\mathrm{G}} \| \pdf_j) = -H_{\min} - \Eop_{\pdf^{\mathrm{G}}}\{ \log \pdf_j(\vVarCem) \}$.
+% Bounding the log-density by its maximum, $\log \pdf_j(\vVarCem) \leq \log \sup_{\vVarCem} \pdf_j(\vVarCem)$, then yields $D_{\mathrm{KL}}(\pdf^{\mathrm{G}} \| \pdf_j) \geq -H_{\min} - \log \sup_{\vVarCem} \pdf_j(\vVarCem)$.
+% For a Gaussian proposal, $\sup_{\vVarCem} \pdf_j(\vVarCem) = ((2\pi)^{\dimVarCem} \det \mC_j)^{-\nicefrac{1}{2}}$, so that this lower bound becomes $H(\pdf_j) - H_{\min} - \nicefrac{\dimVarCem}{2}$, \ie, it suffices to choose the entropy floor sufficiently far below the entropy of the current proposal.
+% Conversely, if the assumption is violated, $\pdf^{\mathrm{G}}$ lies within the trust region and is thus already optimal, \ie, $\alpha^{\ast} = \bar{\alpha} > 0$ and $\eta^{\ast} = 0$, which shows that the assumption can only fail if the entropy constraint is present.
+% Strict positivity of $\eta^{\ast}$ implies that the exponent $\nicefrac{\eta^{\ast}}{(\eta^{\ast}+\alpha^{\ast})}$ in \cref{eq:opt_proposal} is non-zero, \ie, the previous proposal is always retained.
+
+% Independently of this assumption, the update \cref{eq:opt_proposal} is always well-defined.
+
+\subsection{Strict Positivity of the Lagrange Multiplier Sum}
+\label[appendix]{sec:appendix:pos_multiplier_sum}
+\begin{theorem}
+    \label{thm:sum_positive}
+    Let $J$ be non-constant, $H_{\min} > -\infty$, $f_j$ be non-degenerate, and $\epsilon < \infty$. Then $\eta^{\ast} + \alpha^{\ast} > 0$.
+\end{theorem}
+% \textit{Proof:} 
+\begin{proof}
+By \ac{KKT} dual feasibility, $\eta^{\ast} \geq 0$ and $\alpha^{\ast} \geq 0$, so $\eta^{\ast} + \alpha^{\ast} = 0$ requires $\eta^{\ast} = \alpha^{\ast} = 0$.
+Under this assumption, the Lagrangian~\cref{eq:tr:lagrangian} reduces to the linear functional $\int_{\IR^{\dimVarCem}} \pdf_{j+1}(\vVarCem) J(\vVarCem) \dd \vVarCem + \nu \left( \int_{\IR^{\dimVarCem}} \pdf_{j+1}(\vVarCem) \dd \vVarCem - 1 \right)$,
+and \cref{eq:lagrange_func_derivative} reduces to $\nicefrac{\delta \mathcal{L}}{\delta \pdf_{j+1}} = J(\vVarCem) + \nu$.
+Solving for $\pdf_{j+1}$ over valid probability measures requires either:
+% \begin{enumerate}[(i)]
+i) $J(\vVarCem) = -\nu$ everywhere on the support of $\pdf_{j+1}$, which requires $J$ to be constant if $\pdf_{j+1}$ is continuous and strictly positive; or
+ii) $\pdf_{j+1} = \delta(\vVarCem - \vVarCem^*)$ with $\vVarCem^* \in \argmin_{\vVarCem} J(\vVarCem)$, concentrating all mass onto the global minimum of $J$.
+% \end{enumerate}
+The first case directly contradicts the assumption that $J$ is non-constant. The second case yields $H(\delta) = -\infty < H_{\min}$ and $D_{\mathrm{KL}}(\delta \| \pdf_j) = \infty > \epsilon$, where either violation suffices to contradict primal feasibility and \ac{KKT} optimality.
+Therefore, $\eta^{\ast} = \alpha^{\ast} = 0$ cannot hold, implying $\eta^{\ast} + \alpha^{\ast} > 0$. %\hfill$\blacksquare$
+\end{proof}
+Hence, the exponents in \cref{eq:opt_proposal} never degenerate, regardless of which of the two constraints is active.
+
+
+\subsection{Strong Duality}
+\label[appendix]{sec:appendix:strong_duality}
+% argumentations, 
+% 1. expexted cost is linear in $\pdf_{j+1}$,teherfore the primal problem is a convex 
+% 2. the equality constraint is linear in $\pdf_{j+1}$,
+% 3. inequalities (reformulated in standard form) $D_{\mathrm{KL}}(\pdf_{j+1} \| \pdf_j) - \epsilon \leq 0$ and $H_{\min} - H(\pdf_{j+1}) \leq 0$ are strictly convex functionals of $\pdf_{j+1}$, since $D_{\mathrm{KL}}(\pdf_{j+1} \| \pdf_j)$ and $-H(\pdf_{j+1})$ are strictly convex functionals of $\pdf_{j+1}$. subtracting the constant $\epsilon$ and $H_{\min}$ does not change the convexity of the functionals.
+% 4. there exists a strictly feasible point, namely $\pdf_{j+1} = \pdf_j$, since $D_{\mathrm{KL}}(\pdf_j \| \pdf_j) = 0 < \epsilon$ and $H(\pdf_j) > H_{\min}$, the latter holding by construction since the entropy floor is chosen below the entropy of the current proposal.
+% therefore Slater's condition is satisfied, and strong duality holds, i.e., minimizing the dual function recovers the exact primal optimum.
+
+% Slater's condition~\cite[Sec.~5.2.3]{boydConvex2004} guarantees strong duality for a problem whose objective function and inequality constraints are convex and whose equality constraints are linear, provided that there exists a strictly feasible point, that is, a point at which all inequality constraints hold strictly (excluding equality).
+% It thus remains to verify these three properties.
+
+% Both the expected cost and the normalization constraint are linear in $\pdf_{j+1}$ in \cref{eq:tr_objective_function}, therefore, the objective function is convex with a linear equality constraint.
+% %
+% Written in standard form, the inequality constraints $D_{\mathrm{KL}}(\pdf_{j+1} \| \pdf_j) - \epsilon \leq 0$ and $H_{\min} - H(\pdf_{j+1}) \leq 0$ are strictly convex functions of $\pdf_{j+1}$. %, as subtracting the constants $\epsilon$ and $H_{\min}$ does not affect convexity.
+% The primal problem is therefore a convex program. % over a convex feasible set.
+% Moreover, the point $\pdf_{j+1} = \pdf_j$ is strictly feasible, since $D_{\mathrm{KL}}(\pdf_j \| \pdf_j) = 0 < \epsilon$ and $H(\pdf_j) > H_{\min}$, the latter holding by construction as the entropy floor is chosen below the entropy of the current proposal.
+% Slater's condition is thus satisfied, and strong duality holds. %, \ie, the duality gap vanishes, $g(\eta^{\ast}, \alpha^{\ast}) = \Eop_{\pdf_{j+1}^{\ast}}\{J(\vVarCem)\}$.
+% Consequently, solving the dual and evaluating \cref{eq:opt_proposal} at $(\eta^{\ast}, \alpha^{\ast})$ recovers the exact primal optimum.
+%
+%
+We show strong duality under the following two weak assumptions, which hold for common setups such as positive-definite quadratic costs and Gaussian proposals.
+
+\begin{assumption}
+    \label{assumption:duality:on_cost}
+    We consider minimizing the expected cost over a class of probability distributions $\mathcal{F}$.
+    We assume that $J(\vVarCem)\ge c > -\infty,~ \forall \vVarCem \in \operatorfont{dom} (\mathcal{F})$ is chosen so that its expectation is bounded below by $c$ across the domain $\operatorfont{dom}(\mathcal{F})$ of the considered distributions in $\mathcal{F}$.
+    This holds trivially without restricting $\mathcal{F}$ whenever $J(\vVarCem) \ge c > -\infty,~\forall \vVarCem$.
+\end{assumption}
+\begin{assumption}
+    \label{assumption:duality:on_cost_and_proposal}
+    The cost function and initial proposal distribution $\pdf_j \in \mathcal{F}$ are chosen such that $\Eop_{\pdf_j}\{J(\vVarCem)\} < +\infty$ holds.
+\end{assumption}
+% In practice, both assumptions are weak and hold for common setups such as positive-definite quadratic costs and Gaussian proposals.
+
+To establish strong duality for \cref{eq:tr_objective_function}, we apply Luenberger's duality theorem for infinite-dimensional convex programs~\cite[Sec.~8.6, Thm.~1]{luenbergerOptimizationVectorSpace1969}, which generalizes Slater's condition from finite-dimensional vector spaces to function spaces. Under this theorem, strong duality holds if 1) the cost function and inequality constraints are convex, 2) there exists a strictly feasible point in $\pdf_{j+1}\in\mathcal{F}$, that is, there is a point where all inequality constraints hold strictly (excluding equality), and 3) the primal infimum ($d^*=\inf_{\pdf_{j+1\in \mathcal{F}, G\le0}} \Eop_{\pdf_{j+1}}\{J(\vVarCem)\}$) over the feasible domain of valid probability densities $\mathcal{F}$ is finite, where $G$ summarizes all inequality constraints.
+
+We verify these requirements for \cref{eq:tr_objective_function} over $\mathcal{F}$, and by restricting $\mathcal{F}$ to valid distributions, we implicitly address the equality constraint for normalized \acp{PDF}.
+%$\Omega = \{ \pdf \in L^1(\mathcal{X}) \mid \pdf(x) \ge 0 \text{ a.e.}, \, \mathbb{E}_{\pdf}\{1\} = 1 \}$:
+\begin{enumerate}
+    \item 
+    \textbf{Convex structure:} Both the expected cost $\Eop_{\pdf_{j+1}}\{J(\vVarCem)\}$ and the normalization constraint are linear in $\pdf_{j+1}$. The inequality constraints $D_{\mathrm{KL}}(\pdf_{j+1} \Vert{} \pdf_j) - \epsilon \le 0$ and $H_{\min} - H(\pdf_{j+1}) \le 0$ are strictly convex functionals of $\pdf_{j+1}$, yielding convex feasible sets. The primal problem is thus a convex program.
+    \item
+    \textbf{Strict feasibility:} Setting $\pdf_{j+1} = \pdf_j \in \mathcal{F}$ yields a strictly feasible point, as $D_{\mathrm{KL}}(\pdf_j \Vert{} \pdf_j) = 0 < \epsilon$ and $H(\pdf_j) > H_{\min}$, where the latter holds by construction since the entropy floor is chosen strictly below the entropy of the current proposal.
+    \item 
+    \textbf{Finite primal infimum:} The primal infimum $d^*$ is finite due to three factors: 
+    (i) the feasible set is non-empty (guaranteed by $\pdf_{j+1} = \pdf_j$);
+    (ii) $+\infty$ is excluded since $\pdf_j$ satisfies $\Eop_{\pdf_j}\{J(\vVarCem)\} < +\infty$ by \cref{assumption:duality:on_cost_and_proposal}; and
+    (iii) the expectation is bounded from below by \cref{assumption:duality:on_cost}.
+\end{enumerate}
+
+Since all conditions are satisfied in our setting, Luenberger's theorem for strong duality holds. 
+% Consequently, strong duality is established, and optimal non-negative dual multipliers exist.
+

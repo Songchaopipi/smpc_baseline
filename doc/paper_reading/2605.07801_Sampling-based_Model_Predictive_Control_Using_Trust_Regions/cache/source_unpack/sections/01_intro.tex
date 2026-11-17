@@ -1,0 +1,53 @@
+
+\section{Introduction}
+\label{sec:intro}
+
+Sampling-based \ac{MPC} methods, such as \ac{CEM}--\ac{MPC}~\cite{pinneriSampleefficientCrossentropyMethod2021} and \ac{MPPI}~\cite{williamsInformationtheoretic2018,kazimRecentAdvancesPath2024}, have gained popularity for solving complex \acp{OCP} due to their ability to efficiently parallelize computations and handle arbitrary cost functions and system dynamics.
+
+These methods iteratively refine a parameterized proposal \ac{PDF} over control sequences by drawing samples, evaluating their trajectory costs, and updating the proposal parameters accordingly.
+Importance-weighting-based variants such as standard \ac{MPPI}~\cite{williamsInformationtheoretic2018}, and iterative extensions thereof~\cite{bhardwajSTORMIntegratedFramework2022} assign weights to the sampled control sequences based on their associated trajectory costs, thereby using a temperature parameter to control the sharpness of the weighting. 
+This parameter is typically held constant or adjusted heuristically during optimization~\cite{pezzatoSamplingbasedModelPredictive2025}.
+Similarly, \ac{CEM}-based methods rely on momentum-style smoothing~\cite{rubinsteinCrossEntropy2004} to prevent premature collapse of the proposal distribution.
+These heuristics are often difficult to tune and may compromise convergence or performance across different problem settings.
+
+Motivated by the success of trust region methods in \ac{RL}~\cite{schulmanTrustRegionPolicy2015,petersRelativeEntropyPolicy2010}, where principled \ac{KL}-constrained updates have largely replaced heuristic parameter tuning, we propose to transfer these ideas to sampling-based \ac{MPC}.
+Specifically, for each proposal update, we constrain the new proposal to remain within a bounded divergence from the previous one. 
+The resulting constrained optimization problem is solved via Lagrange multipliers, with optimal hyperparameters obtained from the dual formulation. 
+The updated proposal is then projected back onto the original distribution family (\eg, Gaussian), yielding a feasible distribution from which control sequences are sampled in the subsequent iteration.
+
+Orthogonal to the choice of update rule, the sampling method directly affects the quality and smoothness of the control.
+In our previous work~\cite{walkerSampleefficientSmoothCrossentropy2026,arXiv26_Walker_IFAC}, we demonstrated that exchanging random samples with precomputed, optimally-placed deterministic samples based on \acp{LCD}~\cite{CDC09_HanebeckHuber} yield improved sample efficiency and smoother control sequences.
+% This comes from their inherently homogeneous sample positioning, or more precisely, the smooth distribution of the size of the sample-free holes between them. 
+% This property provides superior coverage and makes \ac{LCD}-based sampling particularly well-suited for integration and optimization, such as evaluating expectations in our trust region cost functions and constraining the updated proposal to stay close to the original.
+\ac{LCD}-based sampling shows superior coverage and inherently positions the samples homogeneously, \ie, it induces a smooth distribution of the sizes of the sample-free gaps between them.
+It is therefore well-suited for integration and optimization tasks.
+In particular, it integrates well with trust region updates, which restrict the proposal to remain close to the original and thus to regions with high sample coverage.
+
+
+% A trust region formulation naturally constrains the proposal update step, removing the need for manual temperature tuning or heuristic adaptation.
+
+% \begin{figure}
+%     \centering
+%     % \includegraphics[width=0.95\columnwidth]{images/eye_catcher/gaussian_process_horizon.pdf} 
+%     \caption{%
+%     Eye-catcher.
+%     }%
+%     \label{fig:eye_catcher}
+% \end{figure}
+%
+%
+\paragraph*{Contribution}
+
+Based on the success of trust region methods in \ac{RL}, we propose a trust region formulation for sampling-based \ac{MPC} that replaces heuristic proposal adaptations with principled \ac{KL}-constrained updates derived from dual optimization.
+Building on our previous work~\cite{walkerSampleefficientSmoothCrossentropy2026,arXiv26_Walker_IFAC}, we further combine the trust region update with deterministic \ac{LCD}-based sampling to improve sample efficiency.
+Both contributions are evaluated on two benchmark control tasks and compared against heuristic baselines across multiple sampling strategies, including random and low-discrepancy sampling (Sobol~\cite{joeConstructingSobolSequences2008} and Halton~\cite{owen2017randomizedhaltonalgorithmr}).
+
+\paragraph*{Notation}
+%
+In this paper, underlined letters, \eg, $\vx$, denote vectors, boldface letters, such as $\rvx$, represent random variables, while boldface capital letters, such as $\mA$, indicate matrices.
+% Sets are denoted by calligraphic letters, \eg, $\mathcal{E}$.
+The expectation of a random variable is denoted by $\hat{\cdot}$, \eg, $\evx$, and covariance matrices are denoted by $\mC$.
+% Diagonal matrices are represented by $\diag(\cdot)$.
+% The indicator function is denoted by $\indFunc$, \eg, $\indFunc_{A}$ is \num{1} if event $A$ is true and \num{0} otherwise.
+% Expectation operators are denoted by $\E{\cdot}$; \eg, $\E[p(\vx)]{\rvx}$ denotes the expectation of $\rvx$ under the \ac{PDF} $p(\vx)$. When appropriate, the \ac{PDF} argument is omitted for simplicity.
+% The same convention applies to the variance operator, denoted by $\Var{\cdot}$.

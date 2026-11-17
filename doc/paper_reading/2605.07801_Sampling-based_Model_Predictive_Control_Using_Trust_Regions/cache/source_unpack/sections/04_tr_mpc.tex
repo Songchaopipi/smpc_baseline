@@ -1,0 +1,183 @@
+\section{Trust Region \ac*{MPC}}
+\label{sec:tr_mpc}
+
+Inspired by the success of trust region methods in \ac{RL}, we propose a trust region formulation for sampling-based \ac{MPC} to improve the optimization process and remove the need for heuristic parameter adaptation.
+
+At iteration $j$, let $\pdf_j$ denote the current proposal \ac{PDF} over control sequences $\vVarCem$, and $\pdf_{j+1}$ the next proposal \ac{PDF} to be optimized.
+The trust region optimization problem is then given by
+\begin{align}
+    \label{eq:tr_objective_function}
+    &\min_{\pdf_{j+1}} \Eop_{\pdf_{j+1}}\{J(\vVarCem)\}
+    % \\
+    % &
+    \quad \text{s.t.} \quad D_{\mathrm{KL}}(\pdf_{j+1} \| \pdf_j) \leq \epsilon \enspace, 
+    \\
+    &
+    \quad H(\pdf_{j+1}) \ge H_{\min} \enspace,
+    % \\
+    % &
+    \quad  \Eop_{\pdf_{j+1}} \{ 1\} = 1 \enspace,
+\end{align}
+where $D_{\mathrm{KL}}(\cdot \| \cdot)$ is the \ac{KL} divergence measuring the distributional change, $H(\cdot)$ is the entropy, $\epsilon>0$ is the maximum allowed \ac{KL} divergence between consecutive proposals,  $H_{\min}$ is the minimum required entropy of the proposal, and the last constraint ensures that $\pdf_{j+1}$ is normalized.
+The \ac{KL} constraint prevents overly aggressive updates, while the minimum entropy constraint encourages exploration and mitigates premature collapse of the proposal.
+Note that the entropy constraint is optional and can be omitted if task-specific knowledge suggests that proposal collapse is not a concern, \eg, when a small number of iterations is used.
+
+To solve the constrained problem, we form the Lagrangian 
+\begin{align}
+    & \mathcal{L}(\pdf_{j+1},\eta,\alpha, \nu) = \Eop_{\pdf_{j+1}}\{J(\vVarCem)\}
+    % \\ 
+    % & \quad 
+    + \eta\left(D_{\mathrm{KL}}(\pdf_{j+1} \| \pdf_j) - \epsilon\right) 
+    \\ & \quad
+    \label{eq:tr:lagrangian}
+    + \alpha\left(H_{\min} - H(\pdf_{j+1})\right) 
+    + \nu \left( \Eop_{\pdf_{j+1}} \{ 1\} - 1 \right)
+    \enspace,
+\end{align}
+where $\eta$, $\alpha$, and $\nu$ are the Lagrange multipliers associated with the \ac{KL} divergence, entropy, and normalization constraints, respectively.
+To find the optimal proposal for the next iteration, we take the functional derivative of $\mathcal{L}$ w.r.t. $\pdf_{j+1}$ and set it to zero (see \cref{sec:appendix:lagrangian} for details).
+% The normalization constraint introduces only an additive constant in the log-domain; consequently, its associated multiplier $\nu$ is implicitly handled and omitted from the subsequent derivation steps (see \cref{sec:appendix:lagrangian} for details).
+The optimal proposal is then given by
+\begin{align}
+    \label{eq:opt_proposal}
+    \pdf_{j+1}^{\ast}(\vVarCem) &= \frac{1}{Z_{\eta,\alpha}}\; \pdf_j(\vVarCem)^{\frac{\eta}{\eta+\alpha}}\exp\left(-\frac{J(\vVarCem)}{\eta+\alpha}\right)
+    \enspace,
+    \\
+    \label{eq:opt_proposal:normalization}
+    Z_{\eta,\alpha} 
+    % &= \int \pdf_j(\vVarCem)^{\tfrac{\eta}{\eta+\alpha}}\exp\left(-\frac{J(\vVarCem)}{\eta+\alpha}\right)d\vVarCem
+    &= \Eop_{\pdf_j}\left\{ \pdf_j(\vVarCem)^{\tfrac{\eta}{\eta+\alpha}-1}\exp \left( -\frac{J(\vVarCem)}{\eta+\alpha} \right) \right\} \enspace,
+\end{align}
+where $Z_{\eta,\alpha}$ is the normalization constant, written as expectation over $\pdf_j$.
+% (we will use this to establish a sample-based estimate of $Z_{\eta,\alpha}$).
+Since the multiplier $\nu$ is implicitly handled in the normalization, it can be omitted from subsequent derivation steps.
+Note that in the case of a Gaussian proposal $\pdf_j(\vVarCem)$, for $\alpha>0$, $\pdf_{j+1}^{\ast}$ is generally non-Gaussian.
+However, for $\alpha=0$, and convex quadratic $J(\vVarCem)$, Gaussianity is preserved.
+
+By substituting $\pdf_{j+1}^{\ast}$ back into the simplified Lagrangian $\mathcal{L}(\pdf_{j+1}^{\ast},\eta,\alpha)$ (see \cref{sec:appendix:dual}), we obtain the dual function
+\begingroup
+% \medmuskip=3.mu% default is 4mu plus 2mu minus 4mu
+% \thickmuskip=3.mu% default is 5mu plus 5mu
+% \thinmuskip=2.mu%default is 3mu
+\begin{align}
+    \label{eq:tr_dual}
+    g(\eta, \alpha) 
+    % =  \mathcal{L}(\pdf_{j+1}^{\ast},\eta,\alpha) 
+    = -\eta \epsilon + \alpha H_{\min} - (\eta + \alpha) \log Z_{\eta,\alpha} \enspace,
+\end{align}
+\endgroup
+which we use to find the optimal Lagrange multipliers $\eta^{\ast}$ and $\alpha^{\ast}$ by numerically solving the dual problem
+\begin{align}
+    \label{eq:tr_dual:opt_problem}
+    \max_{\eta \geq 0, ~\alpha \geq 0} g(\eta, \alpha) \enspace.
+\end{align}
+Note that, in our case, strong duality holds, so that solving the dual problem is equivalent to solving the primal problem~\cref{eq:tr_objective_function} (see \cref{sec:appendix:strong_duality}) and that $\pdf_{j+1}$ never degenerates, \ie, $\eta^{\ast} + \alpha^{\ast} > 0$ (see \cref{sec:appendix:pos_multiplier_sum}).
+
+Since the optimization over $\eta$ and $\alpha$ is always two-dimensional (in particular, it is independent of the control input dimension and horizon length), standard gradient-based solvers are efficient in practice.
+% The gradient of the dual function $\nabla g(\eta,\alpha) = [ \nicefrac{\partial g}{\partial \eta}, \nicefrac{\partial g}{\partial \alpha} ]\T$ is given by
+% \begin{align}
+%     \label{eq:tr_dual:gradient}
+%     \begin{bmatrix}
+%         -\log Z_{\eta,\alpha}-\frac{\alpha\,\Eop_{\pdf_{j+1}^{\ast}}[\log \pdf_j(\vVarCem)] + \Eop_{\pdf_{j+1}^{\ast}}[J(\vVarCem)]}{\eta + \alpha}-\epsilon 
+%         \\
+%         -\log Z_{\eta,\alpha}+\frac{\eta\,\Eop_{\pdf_{j+1}^{\ast}}[\log \pdf_j(\vVarCem)] - \Eop_{\pdf_{j+1}^{\ast}}[J(\vVarCem)]}{\eta + \alpha}+H_{\min}
+%     \end{bmatrix}
+%     \enspace.
+% \end{align}
+% Note that by substituting $\pdf_{j+1}^{\ast}$ from~\cref{eq:opt_proposal} and $Z_{\eta,\alpha}$ from \cref{eq:opt_proposal:normalization} into~\cref{eq:tr_dual:gradient}, the gradient can be entirely written in terms of expectations of $\pdf_j$.
+% Consequently, the gradient~\cref{eq:tr_dual:gradient} can be estimated from samples drawn from $\pdf_j$.
+The gradient of the dual function $\nabla g(\eta,\alpha)$ is given by
+\begin{align}
+    \label{eq:tr_dual:gradient}
+    \begin{bmatrix}
+        \frac{\partial g}{\partial \eta}
+        \\
+        \frac{\partial g}{\partial \alpha}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        -\log Z_{\eta,\alpha}
+        -(\eta+\alpha)\frac{\partial \log Z_{\eta,\alpha}}{\partial \eta}
+        -\epsilon
+        \\
+        -\log Z_{\eta,\alpha}
+        -(\eta+\alpha)\frac{\partial \log Z_{\eta,\alpha}}{\partial \alpha}
+        +H_{\min}
+    \end{bmatrix}
+\end{align}
+where the partial derivatives of $\log Z_{\eta,\alpha}$ are
+\begin{align}
+    &
+    \frac{\partial \log Z_{\eta,\alpha}}{\partial \eta}
+    =
+    \frac{1}{(\eta+\alpha)^2}
+    \\
+    &
+    \enspace\cdot
+    \frac{\Eop_{\pdf_{j}} \left\{
+    \pdf_{j}(\vVarCem)^{\frac{\eta}{\eta+\alpha}-1}
+    \exp \left(-\frac{J(\vVarCem)}{\eta+\alpha}\right)
+    \left(\alpha\log \pdf_{j}(\vVarCem)+J(\vVarCem)\right)
+    \right\} }
+    {
+        % \Eop_{\pdf_{j}} \left\{
+        % \pdf_{j}(x)^{\frac{\eta}{\eta+\alpha}-1}
+        % \exp \left(-\frac{J(x)}{\eta+\alpha}\right)
+        % \right\} 
+        Z_{\eta,\alpha}
+    } \, ,
+    % =\frac{1}{(\eta+\alpha)^2}
+    % \Eop_{\pdf_{j+1}^{\ast}} \left[\alpha\log \pdf_{j}(x)+J(x)\right].
+    \\
+    &
+    \frac{\partial \log Z_{\eta,\alpha}}{\partial \alpha}
+    =
+    \frac{1}{(\eta+\alpha)^2}
+    \\
+    &
+    \enspace\cdot
+    \frac{\Eop_{\pdf_{j}} \left\{
+    \pdf_{j}(\vVarCem)^{\frac{\eta}{\eta+\alpha}-1}
+    \exp \left(-\frac{J(\vVarCem)}{\eta+\alpha}\right)
+    \left(-\eta\log \pdf_{j}(\vVarCem)+J(\vVarCem)\right)
+    \right\} }
+    {
+        % \Eop_{\pdf_{j}} \left\{
+        % \pdf_{j}(x)^{\frac{\eta}{\eta+\alpha}-1}
+        % \exp \left(-\frac{J(x)}{\eta+\alpha}\right)
+        % \right\} 
+        Z_{\eta,\alpha}
+    } \, .
+    % =\frac{1}{(\eta+\alpha)^2}
+    % \Eop_{\pdf_{j+1}^{\ast}} \left[-\eta\log \pdf_{j}(x)+J(x)\right].
+\end{align}
+Note that the gradient is entirely written in terms of expectations of $\pdf_j$.
+Consequently, the gradient can be estimated from samples drawn from $\pdf_j$.
+
+% Once the optimal Lagrange multipliers $\eta^{\ast}$ and $\alpha^{\ast}$ have been obtained, the optimal proposal \ac{PDF} $\pdf_{j+1}^{\ast}$ follows directly from~\cref{eq:opt_proposal}.
+% We can derive a sampling-based approximation of $\pdf_{j+1}^{\ast}$ based on samples drawn from $\pdf_j$ and weights
+% \begin{align}
+%     \label{eq:tr_dual:weights}
+%     w_i \propto \pdf_j(\vVarCem^{(i)})^{\frac{\eta^{\ast}}{\eta^{\ast}+\alpha^{\ast}}-1}\exp\left(-\frac{J(\vVarCem^{(i)})}{\eta^{\ast}+\alpha^{\ast}}\right) \enspace.
+% \end{align}
+% Although different in derivation, the resulting weights have a similar form as the update in \ac{MPPI}-like methods, but with a principled weighting scheme derived from the trust region formulation, and without the need for heuristic temperature adaptation. 
+% When the entropy constraint is inactive, \ie, $\alpha=0$, the weights reduce to exactly the same form as in \cref{eq:imp_weights}.
+
+% Note that for $\alpha>0$, the \ac{PDF} $\pdf_{j+1}^{\ast}$ is non-Gaussian even if the previous proposal $\pdf_j$ is Gaussian, due to the exponentiation of $\pdf_j$.
+% Nevertheless, the moment-matching approximation projects $\pdf_{j+1}^{\ast}$ back onto the Gaussian family.
+
+
+Once the optimal Lagrange multipliers $\eta^{\ast}$ and $\alpha^{\ast}$ have been obtained, the optimal proposal \ac{PDF} $\pdf_{j+1}^{\ast}$ follows directly from~\cref{eq:opt_proposal}.
+We can derive a Dirac-mixture approximation of $\pdf_{j+1}^{\ast}$ based on samples drawn from $\pdf_j$ and weights
+\begin{align}
+    \label{eq:tr_dual:weights}
+    w_i \propto \pdf_j(\vVarCem^{(i)})^{\frac{\eta^{\ast}}{\eta^{\ast}+\alpha^{\ast}}-1}\exp\left(-\frac{J(\vVarCem^{(i)})}{\eta^{\ast}+\alpha^{\ast}}\right) \enspace.
+\end{align}
+Finally, we project our Dirac-mixture approximation of $\pdf_{j+1}^{\ast}$ onto the same parametric form as the original proposal \ac{PDF}, \eg, via moment matching for Gaussians, or expectation--maximization for Gaussian mixtures.
+In this work, we use Gaussian proposals, which yield a closed-form update for the new mean $\evVarCem_{j+1}$ and covariance $\mC_{j+1}$, expressed in terms of the weighted empirical sample mean and covariance.
+Notably, when $\alpha^{\ast} = 0$, this projection does not introduce additional errors, as the true $\pdf_{j+1}^{\ast}$ is Gaussian. 
+In the general case, however, the projection incurs an additional approximation error.
+
+Although different in derivation, the resulting weights \cref{eq:tr_dual:weights} exhibit a form similar to those in \cref{eq:imp_weights} used by \ac{MPPI}-like methods.
+In particular, when the entropy constraint is inactive, \ie, $\alpha^{\ast}=0$, the two formulations coincide exactly.
+Importantly, however, our approach yields optimal weights in a principled manner from the trust region formulation, thereby eliminating the need for heuristic hyperparameter adaptation.

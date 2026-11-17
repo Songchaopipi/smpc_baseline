@@ -1,0 +1,252 @@
+% Description: This file contains the packages used in the document.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% font settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \usepackage[utf8]{inputenc} % Package inputenc Warning: inputenc package ignored with utf8 based engines.
+\usepackage[T1]{fontenc}
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+%\usepackage{times} % assumes new font selection scheme installed
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% required tool packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{etoolbox}
+% \RequirePackage{etex} % fuer autonum package
+
+% \usepackage{scrhack} % The scrhack package is part of the KOMA-Script bundle in LaTeX. Its main purpose is to improve compatibility between KOMA-Script and other LaTeX packages. Essentially, it patches these packages to ensure they work better together and adds new features to enhance their interaction with KOMA-Script
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% editing, todo notes, comments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \usepackage{comment}
+% \usepackage[colorinlistoftodos]{todonotes}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% include math packages and definitions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\def\input@path{{settings}} % isasmathmacros saved in folder './settings/'
+\usepackage{settings/isasmathmacros} 
+\makeatletter
+
+\usepackage{nicefrac}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tables, listings, algorithms
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{array}
+\usepackage{booktabs}
+% \usepackage{tabularx} 
+% \usepackage{ltablex}
+% \usepackage{tabulary}
+% \usepackage{multirow}
+
+% \usepackage{enumitem} % customize lists % not compatible with IEEEconf and IEEEtran since lists are redefined there
+
+% \usepackage[ruled]{algorithm2e} % algorithmen
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\AtBeginEnvironment{algorithm}{\DontPrintSemicolon}
+\SetAlCapNameFnt{\small}
+\SetAlCapFnt{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% include graphic settings, tikz settings and colors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[x11names, svgnames, rgb]{xcolor} % load before pgf
+\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage[]{graphicx}  % TODO: Remove draft before final submission
+% \usepackage[allfiguresdraft]{draftfigure} % TODO: Remove draft before final submission
+\graphicspath{ {./images/**} } % more paths can be added {./path2/**}
+
+% \usepackage[notransparent]{svg}
+% \usepackage{svg-extract}
+% \usepackage{adjustbox}
+
+%\usepackage{epsfig} % for postscript graphics files
+
+% \usepackage{graphviz} % for graphviz dot files (tree structures etc.)
+% \usepackage{dot2texi}
+
+% \usepackage{tikz}
+
+% \usepackage{pgfplots}
+% \usepgfplotslibrary{groupplots,dateplot}
+% \usepgfplotslibrary{external}
+% \usetikzlibrary{patterns, shapes,}
+% \pgfplotsset{compat=newest}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Externalize TikZ figures
+% speed up compilation, see
+% https://tex.stackexchange.com/questions/482557/how-to-externalize-tikz-pictures
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \usepgfplotslibrary{external} % LaTeX and plain TeX
+% \usetikzlibrary{pgfplots.external} % LaTeX and plain TeX
+
+% \tikzexternalize[prefix=externalized_figures/] % activate and define externalized_figures/ as cache folder
+
+% maybe memoize or robust-externalise will be supported by overleaf one day.
+% \usepackage{memoize}
+% \mmzset{%
+%   path={dir=memos},
+%   mkdir,
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% scaling and rotating figures, symbols, texts, etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \usepackage{scalerel} % for scaling symbols
+% \usepackage{relsize} % change text sizes, e.g. in svg 
+% \usepackage{pdflscape} % rotate pages % Package pdflscape adds PDF support to the environment landscape of package lscape by setting the PDF page attribute /Rotate.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% captions, subfigures, floats
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% IEEEtran: modern and actively maintained subcaption.sty package [25] can not be recommended at this time because it does not provide an option to prevent the underlying caption.sty from taking control of main caption formatting away from IEEEtran.
+% \ifCLASSOPTIONcompsoc
+    % \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+    % \newcommand{\subfigref}[1]{\protect\subref{#1}}
+% \else
+    % \usepackage[caption=false,font=footnotesize]{subfig}
+    % \newcommand{\subfigref}[1]{\protect\subref{#1}}
+% \fi
+
+\usepackage[font=normalsize,skip=1pt, font=small]{caption}
+\usepackage[skip=1.5pt, font=small]{subcaption} %used with ieeeconf class
+
+
+% \usepackage[font=footnotesize,labelfont=sf,textfont=sf]{subcaption}
+
+% set the subref format from default "a" to "(a)" -> use parentheses
+\captionsetup{subrefformat=parens}
+
+% \usepackage{subfigure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% balancing columns at the end of the document
+% 
+% Note: flushend is not recommended by IEEE
+% If you are using IEEEtran.cls version 1.8b or later, you can use the \IEEEtriggeratref command to automatically trigger the column break at the last reference in the document.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage[keeplastbox]{flushend}
+\usepackage{balance} % -> \balance at the end of the document in the second column on the last page
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% float placement, and numbering
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \usepackage{float}
+% \usepackage{subfloat} % This package enables subnumbering of floats (figures and tables) similar to the subequations environment of the amsmath package. It does not the same as the subfigure package which generates subfigures within one normal figure
+\usepackage{stfloats} % bessere Platzierung der Bilder
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% References: URLs, citations, bibliography
+
+% Deactivate according to IEEE specifications before submission. 
+% Might be nice for work with draft.
+% https://conferences.ieeeauthorcenter.ieee.org/write-your-paper/meet-ieee-xplore-requirements/
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{url} % The command \url is a form of verbatim command that allows linebreaks at certain characters or combinations of characters, accepts reconfiguration, and can usually be used in the argument to another command. (The \urldef command provides robust commands that serve in cases when \url doesn't work in an argument.) The command is intended for email addresses, hypertext links, directories/paths, etc., which normally have no spaces, so by default the package ignores spaces in its argument. However, a package option “allows spaces”, which is useful for operating systems where spaces are a common part of file names.
+
+% \usepackage[bookmarks=true]{hyperref} % The package is used to handle cross-referencing commands in LaTeX to produce hypertext links in the document. The package provides backends for the \url, \href, and \nolinkurl commands. It is a useful complement to the \url package. The package is loaded by default because it is used by the \href command, but options are available to prevent loading and to prevent inclusion of the hyperref package in the \usepackage command.
+% change the color and style of the links
+% \hypersetup{hidelinks} % make links but they are not colored
+% \hypersetup{pdfborderstyle={/S/U/W 1}} % links are underlined
+
+\usepackage{nohyperref}
+
+% \usepackage{refstyle} % The package provides a consistent way to refer to a label in a document. It is intended to be used in conjunction with the varioref package, which provides a consistent way to refer to a label and its location in a document. The package is designed to work with the hyperref package, and to be easily extended to work with other packages.
+
+% cite.sty provides a nocompress option that disables compression, but preserves sorting.
+\usepackage{cite} % multi citatioin \cite{tag3,tag1,tag2} get auto sorted by number
+% \usepackage[nocompress]{cite}%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% References: cleverref used with custom prefix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\usepackage{cleveref}
+
+\crefname{figure}{Fig.}{Figs.} % figure prefix 
+\crefname{section}{Sec.}{Secs.} % Section prefix 
+\crefname{table}{Tab.}{Tabs.} % Tabular prefix 
+% \crefname{algocf}{Alg.}{Algs.} % algorithm prefix
+\crefname{algorithm}{Alg.}{Algs.} % algorithm prefix
+\crefname{equation}{}{} % Equation prefix (empty)
+\crefname{appendix}{Appx.}{Appx.}
+% assumption, 
+
+%%%%
+% from custom environments in settings/isasmathmacros
+% ...Ctr -> custom counters 
+
+% \crefname{assumption}{Assumption}{Assumption} % assumption label format
+\crefname{assumption}{Assump.}{Assump.} % assumption prefix
+
+\crefname{myAssumptionCtr}{Assump.}{Assump.} % assumption label format
+
+\crefname{theorem}{Theorem}{Theorems} % theorem label format
+\crefname{myTheoremCtr}{Theorem}{Theorems} % theorem label format
+
+\crefname{example}{Example}{Examples} % example label format
+\crefname{myExampleCtr}{Example}{Examples} % example label format
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% automatic numbering of referenced equations
+%
+% the \expandafter is needed to avoid a bug in the autonum package, see:
+% https://tex.stackexchange.com/questions/285950/package-autonum-needs-the-obsolete-etex-package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\expandafter\def\csname ver@etex.sty\endcsname{3000/12/31}
+\let\globcount\newcount
+% \undef\xifstrcmp 
+\usepackage{autonum}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%            SI setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{siunitx}
+\sisetup{exponent-product = \cdot,}
+\sisetup{print-unity-mantissa = false} % do not print 1 in front of units, e.g. 1 m -> m
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%          typesetting, widows and orphans 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{microtype}
+% \microtypesetup{tracking=true} % better character spacing
+\usepackage[all]{nowidow}
+\clubpenalty=100000
+\widowpenalty=100000
+\brokenpenalty=100000
+\displaywidowpenalty = 10000
+\finalhyphendemerits=100000
+\linepenalty=1000
+
+% \usepackage{xspace} % The xspace package provides a single command that looks at what comes after it in the command stream, and decides whether to insert a space to replace one “eaten” by the TeX command decoder. The decision is based on what came after any space, not on whether there was a space (which is unknowable): so if the next thing proves to be punctuation, the chances are there was no space, but if it’s a letter, there’s probably a need for space. This technique is not perfect, but works in a large proportion of cases.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% % use if space needed
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% \usepackage[subtle, mathspacing=normal, wordspacing=normal]{savetrees}
+% \usepackage[subtle, leading,mathspacing=normal,wordspacing=normal, bibliography=normal, bibbreaks=normal]{savetrees}
+\usepackage[subtle,leading,leadingfraction=0.97,mathspacing=normal,wordspacing=normal ]{savetrees}
+% \usepackage[subtle,bibbreaks,bibnotes,mathspacing=normal,wordspacing=normal]{savetrees}
+
+% \usepackage[subtle,bibnotes,charwidths,leading,indent,lists,mathspacing=normal]{savetrees}%moderate but without reduced vertical spacing in equations % 
+% \usepackage[moderate]{savetrees}
+% \usepackage[extreme]{savetrees}

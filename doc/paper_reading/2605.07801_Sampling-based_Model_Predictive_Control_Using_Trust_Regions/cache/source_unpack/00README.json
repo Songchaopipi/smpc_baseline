@@ -1,0 +1,21 @@
+{
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "root.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "bib/IEEEtran_Capitalize.bst"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "bib/literature.bib"
+      }
+   ],
+   "spec_version" : 1,
+   "texlive_version" : "2025",
+   "process" : {
+      "compiler" : "pdflatex"
+   }
+}

@@ -1,0 +1,19 @@
+{
+  "input": "2605.07801v2",
+  "official_pipeline_exit_code": 0,
+  "text_validator_exit_code": 0,
+  "final_validator_exit_code": 0,
+  "claims": 8,
+  "evidence_locators": 8,
+  "images": 6,
+  "main_characters": 11155,
+  "appendix_characters": 8295,
+  "source_priority": "versioned PDF and corresponding TeX source",
+  "experiments_rerun": false,
+  "known_ingestion_limits": [
+    "ar5iv content omits v2 sections",
+    "hjfy HTTP 200 is JS shell",
+    "image manifest entry 8 maps same-basename wrong task; report uses verified image",
+    "runtime HTML misses siunitx fixed exponent; report uses PDF ms"
+  ]
+}

@@ -1,0 +1,158 @@
+% For details, see https://www.ctan.org/pkg/acro
+
+
+\usepackage[]{acro}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% acro options
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% \acsetup{make-links}
+\acsetup{single=1} % This option determines whether a single appearance of an acronym counts as usage. It might be desirable in such cases that an acronym is simply printed as long form and not added to the list of acronym.
+\acsetup{single-style=long} % single-style = long-short|short-long|short|long|footnote. The style of the single appearance of an acronym.
+
+
+
+%======== ENTER YOUR ABBREVIATIONS HERE ===============================
+
+% You can access the abbreviations in your code by the commands
+%  \ac for singluar
+%  \acp for plural
+%  \Ac for capitalized singular
+%  \acl for long form
+%  ... see acro package description for many more: https://www.ctan.org/pkg/acro
+
+% There is no need to sort your acronyms alphabetically, however it helps to have an overview.
+% You could assign classes for each acrynom, allowing to print only lists for eg. all channel types and a second list for all model types and so on.
+% This package acro is similar to the acronym package, but the latter does not provide capitalization
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% sorted abbreviations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% A
+\DeclareAcronym{AL}         {short={AL},	    	long={active learning}}
+\DeclareAcronym{ANEES}      {short={ANEES},	    	long={averaged normalized estimation error squared}}
+\DeclareAcronym{ANLL}       {short={ANLL},	    	long={average negative log-likelihood}}
+
+% B
+\DeclareAcronym{BNN}		{short={BNN},	    	long={Bayesian neural network}}
+
+% C
+\DeclareAcronym{CDF}		{short={CDF},	    	long={cumulative density function}}
+\DeclareAcronym{CEM}		{short={CEM},	    	long={cross-entropy method}}
+\DeclareAcronym{CMA-ES}	    {short={CMA-ES},	    long={covariance matrix adaptation evolution strategy}, long-plural-form={covariance matrix adaptation evolution strategies}}
+\DeclareAcronym{CvM}		{short={CvM},	    	long={Cram\'er--von Mises}}
+
+% D
+\DeclareAcronym{DDP}		{short={DDP},	    	long={differential dynamic programming}}
+\DeclareAcronym{DM}	        {short={DM},	    	long={Dirac mixture}}
+\DeclareAcronym{DMD}		{short={DMD},	    	long={Dirac mixture density}}
+\DeclareAcronym{dsCEM}      {short={dsCEM},         long={deterministic sampling CEM}}
+
+% E
+\DeclareAcronym{ECE}	    	{short={ECE},	    	long={expected calibration error}}
+\DeclareAcronym{EKF}		{short={EKF},	    	long={Extended Kalman Filter}}
+\DeclareAcronym{EM}	    	{short={EM},	    	long={expectation--maximization}}
+\DeclareAcronym{ENCE}	    	{short={ENCE},	    	long={expected normalized calibration error}}
+\DeclareAcronym{EP}	    	{short={EP},	    	long={expectation propagation}}
+
+% F
+
+% G
+\DeclareAcronym{GM}	        {short={GM},	    	long={Gaussian mixture}}
+\DeclareAcronym{GEVR}	    {short={GEVR},	    	long={generalized error variance ratio}}
+\DeclareAcronym{GUCE}		{short={GUCE},	    	long={generalized \acs{UCE}}}
+
+% H
+
+% I
+\DeclareAcronym{iLQR}		{short={iLQR},	    	long={iterative linear quadratic regulator}}
+% J
+% K
+\DeclareAcronym{kdtree}		{short={\mbox{$k$-d~tree}},	    	long={$k$-dimensional tree}}
+\DeclareAcronym{KBNN}		{short={KBNN},	    	long={Kalman Bayesian Neural Networks}}
+\DeclareAcronym{KKT}        {short={KKT},	    	long={Karush--Kuhn--Tucker}}
+\DeclareAcronym{KL}         {short={KL},            long={Kullback--Leibler}}
+\DeclareAcronym{KS}		    {short={KS},	    	long={Kolmogorov--Smirnov}}
+
+% L
+\DeclareAcronym{LCD}		{short={LCD},	    	long={localized cumulative distribution}}
+\DeclareAcronym{LRKF}	    {short={LRKF},	    	long={Linear Regression Kalman filter}}
+
+% M
+\DeclareAcronym{MAP}	    {short={MAP},	    	long={maximum a posteriori}}
+\DeclareAcronym{MC}	        {short={MC},	    	long={Monte Carlo}}
+\DeclareAcronym{MCMC}	    {short={MCMC},	    	long={Markov chain Monte Carlo}}
+\DeclareAcronym{mCvM}		{short={mCvM},	    	long={modified Cram\'er--von Mises}}
+\DeclareAcronym{ML}		    {short={ML},	    	long={maximum likelihood}}
+\DeclareAcronym{MLE}		{short={MLE},	    	long={maximum likelihood estimator}}
+\DeclareAcronym{MPC}		{short={MPC},	    	long={model predictive control}}
+\DeclareAcronym{MPPI}		{short={MPPI},	    	long={model predictive path integral}}
+\DeclareAcronym{MSE}		{short={MSE},	    	long={mean squared error}}
+\DeclareAcronym{MMSE}		{short={MMSE},	    	long={minimum mean square error}}
+
+\DeclareAcronym{MNR}		{short={MNR},	    	long={matrix norm ratio}}
+\DeclareAcronym{MNRE}		{short={MNRE},	    	long={matrix norm relative  error}}
+\DeclareAcronym{MSER}		{short={MSER},	    	long={mean squared error ratio}}
+
+\DeclareAcronym{MV}		{short={MV},	    	long={mean variance}}
+
+
+
+
+% N
+\DeclareAcronym{NCI}		{short={NCI},	    	long={noncredibility index}}
+\DeclareAcronym{NEES}      {short={NEES},	    	long={normalized estimation error squared}}
+\DeclareAcronym{NLL}       {short={NLL},	    	long={negative log-likelihood}}
+\DeclareAcronym{NGUCE}      {short={NGUCE},	    	long={normalized \ac{GUCE}}}
+\DeclareAcronym{NUTS}      {short={NUTS},	    	long={No-U-Turn Sampler}}
+
+
+% O 
+\DeclareAcronym{ODE}	    {short={ODE},	    	long={ordinary differential equation}}
+\DeclareAcronym{OCP}	    {short={OCP},	    	long={optimal control problem}}
+
+% P
+\DeclareAcronym{PBP}		{short={PBP},	    	long={probabilistic backpropagation}}
+
+\DeclareAcronym{PCD}		{short={PCD},	    	long={projected cumulative distribution}}
+\DeclareAcronym{PDF}		{short={PDF},	    	long={probability density function}}
+
+% Q
+\DeclareAcronym{QCE}		{short={QCE},	    	long={quantile calibration error}}
+
+% R
+\DeclareAcronym{RL}         {short={RL},            long={reinforcement learning}}
+\DeclareAcronym{RMSE}		{short={RMSE},	    	long={root \ac{MSE}}}
+\DeclareAcronym{RMV}		{short={RMV},	    	long={root \ac{MV}}}
+\DeclareAcronym{RNN}		{short={RNN},	    	long={recurrent neural network}}
+% S
+\DeclareAcronym{S2KF}	    {short={S$^2$KF},	    long={Smart Sampling Kalman Filter}}
+\DeclareAcronym{SVI}		{short={SVI},	    	long={Stochastic Variational Inference}}
+% T
+\DeclareAcronym{TAGI}		{short={TAGI},	    	long={Tractable Approximate Gaussian Inference}}
+
+% U
+\DeclareAcronym{UCE}		{short={UCE},	    	long={uncertainty calibration error}}
+\DeclareAcronym{UKF}		{short={UKF},	    	long={Unscented Kalman Filter}}
+
+% V
+\DeclareAcronym{VI}		    {short={VI},	    	long={variational inference}}
+
+% W
+
+% X
+
+% Y
+
+% Z
+
+
+
+
+
+
+
